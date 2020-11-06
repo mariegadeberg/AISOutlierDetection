@@ -3,91 +3,52 @@ import pickle
 from Config import *
 from utils_preprocess import *
 import argparse
+from Class_test import Preprocess
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--save_data", type=bool, default=True, help="Whether to save the data generated in the preprocessing")
 
-args = parser.parse_known_args()
+args = parser.parse_args()
 
 ## Defining constants from config file
 
 path = Config.path
 save_data = args.save_data
 
-max_interval = Config.max_interval
-epoch_to_T0 = Config.epoch_to_T0
-
-threshold_trajlen = Config.threshold_trajlen
-threshold_dur_min = Config.threshold_dur_min
-threshold_dur_max = Config.threshold_dur_max
-threshold_moored = Config.threshold_moored
-
-freq = Config.freq
-
-lat_min = Config.lat_min
-lat_max = Config.lat_max
-long_min = Config.long_min
-long_max = Config.long_max
-
 ## Running preprocessing
 
 #cargo_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Carg*.json")
 tank_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Tank*.json")
 
-#data_split_cargo, stats_cargo = split_and_collect_trajectories(cargo_files,
-#                                                                "Cargo",
-#                                                                max_interval,
-#                                                                epoch_to_T0,
-#                                                                threshold_trajlen,
-#                                                                lat_min,
-#                                                                lat_max,
-#                                                                long_min,
-#                                                                long_max,
-#                                                                threshold_moored,
-#                                                                threshold_dur_min,
-#                                                                threshold_dur_max)
-
-data_split_tank, stats_tank = split_and_collect_trajectories(tank_files,
-                                                                "Tank",
-                                                                max_interval,
-                                                                epoch_to_T0,
-                                                                threshold_trajlen,
-                                                                lat_min,
-                                                                lat_max,
-                                                                long_min,
-                                                                long_max,
-                                                                threshold_moored,
-                                                                threshold_dur_min,
-                                                                threshold_dur_max,
-                                                                freq)
+data_split, stats = Preprocess(Config).split_and_collect_trajectories(tank_files, "Tank")
 
 if save_data:
-    with open("Code/data_split_cargo.pcl", "wb") as f:
-        pickle.dump(data_split_cargo, f)
-    with open("Code/stats_cargo.pcl", "wb") as s:
-        pickle.dump(stats_cargo, s)
+    #with open("Code/data_split_cargo.pcl", "wb") as f:
+    #    pickle.dump(data_split_cargo, f)
+    #with open("Code/stats_cargo.pcl", "wb") as s:
+    #    pickle.dump(stats_cargo, s)
 
-    with open("Code/data_split_tank.pcl", "wb") as f:
-        pickle.dump(data_split_tank, f)
-    with open("Code/stats_tank.pcl", "wb") as s:
-        pickle.dump(stats_tank, s)
+    with open("Code2.0/local_files/data_split_tank.pcl", "wb") as f:
+        pickle.dump(data_split, f)
+    with open("Code2.0/local_files/stats_tank.pcl", "wb") as s:
+        pickle.dump(stats, s)
 
 
 #### EXPLORE ####
 
-with open("Code/data_split_cargo.pcl", "rb") as f:
-    data_split_cargo = pickle.load(f)
-
-with open("Code/data_split_tank.pcl", "rb") as f:
-    data_split_tank = pickle.load(f)
-
-with open("Code/stats_cargo.pcl", "rb") as f:
-    stats_cargo = pickle.load(f)
-
-with open("Code/stats_tank.pcl", "rb") as f:
-    stats_tank = pickle.load(f)
-
+#with open("Code/data_split_cargo.pcl", "rb") as f:
+#    data_split_cargo = pickle.load(f)
+#
+#with open("Code/data_split_tank.pcl", "rb") as f:
+#    data_split_tank = pickle.load(f)
+#
+#with open("Code/stats_cargo.pcl", "rb") as f:
+#    stats_cargo = pickle.load(f)
+#
+#with open("Code/stats_tank.pcl", "rb") as f:
+#    stats_tank = pickle.load(f)
+#
 
 
 

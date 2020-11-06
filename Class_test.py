@@ -111,14 +111,4 @@ class Preprocess:
         return data_split, stats
 
 
-from Config import *
-
-path = Config.path +"/Data/aisMixJSONX_1912XX/"
-
-config = Config()
-
-files = [path+"Tank218779000_1912XX_ANNIKA.json",path+"Tank219019067_1912XX_GAIANORDIC.json", path+"Tank219082000_1912XX_TERNHAV.json"]
-category = "test"
-
-data_split, stats = Preprocess(Config).split_and_collect_trajectories(files, category)
 
