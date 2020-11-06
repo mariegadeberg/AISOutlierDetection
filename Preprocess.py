@@ -1,9 +1,8 @@
 import glob
 import pickle
 from Config import *
-from utils_preprocess import *
 import argparse
-from Class_test import Preprocess
+from utils_preprocess import Preprocess
 
 parser = argparse.ArgumentParser()
 
@@ -11,28 +10,27 @@ parser.add_argument("--save_data", type=bool, default=True, help="Whether to sav
 
 args = parser.parse_args()
 
-## Defining constants from config file
-
 path = Config.path
 save_data = args.save_data
 
 ## Running preprocessing
 
-#cargo_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Carg*.json")
+cargo_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Carg*.json")
 tank_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Tank*.json")
 
-data_split, stats = Preprocess(Config).split_and_collect_trajectories(tank_files, "Tank")
+data_split_cargo, stats_cargo = Preprocess(Config).split_and_collect_trajectories(cargo_files, "Cargo")
+data_split_tank, stats_tank = Preprocess(Config).split_and_collect_trajectories(tank_files, "Tank")
 
 if save_data:
-    #with open("Code/data_split_cargo.pcl", "wb") as f:
-    #    pickle.dump(data_split_cargo, f)
-    #with open("Code/stats_cargo.pcl", "wb") as s:
-    #    pickle.dump(stats_cargo, s)
+    with open("Code2.0/local_files/data_split_cargo.pcl", "wb") as f:
+        pickle.dump(data_split_cargo, f)
+    with open("Code2.0/local_files/stats_cargo.pcl", "wb") as s:
+        pickle.dump(stats_cargo, s)
 
     with open("Code2.0/local_files/data_split_tank.pcl", "wb") as f:
-        pickle.dump(data_split, f)
+        pickle.dump(data_split_tank, f)
     with open("Code2.0/local_files/stats_tank.pcl", "wb") as s:
-        pickle.dump(stats, s)
+        pickle.dump(stats_tank, s)
 
 
 #### EXPLORE ####
