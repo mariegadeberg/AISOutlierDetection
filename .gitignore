@@ -1,1 +1,6 @@
+/local_files/*
 
+__pycache__
+.DS_store
+.vscode/*
+.idea
