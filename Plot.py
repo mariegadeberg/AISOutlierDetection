@@ -1,14 +1,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import descartes
 import geopandas as gpd
+import descartes
 from shapely.geometry import Point, Polygon
 import os
 import argparse
 import pickle
 import random
 from matplotlib.lines import Line2D
-import Config
+from Config import *
 
 ## Creating parser arguments ##
 
@@ -26,10 +26,10 @@ no_traj = args.no_traj
 path = Config.path
 
 ## Retrieving data ##
-with open("Code/data_split_cargo.pcl", "rb") as f:
+with open("Code2.0/local_files/data_split_cargo.pcl", "rb") as f:
     data_split_cargo = pickle.load(f)
 
-with open("Code/data_split_tank.pcl", "rb") as f:
+with open("Code2.0/local_files/data_split_tank.pcl", "rb") as f:
     data_split_tank = pickle.load(f)
 
 data = data_split_cargo + data_split_tank
@@ -50,7 +50,7 @@ legend_lines = [Line2D([0], [0], color="blue", lw=2),
 fig, ax = plt.subplots(figsize = (10,5))
 dk.plot(ax = ax, alpha = 0.4, color = "grey")
 dk2.plot(ax = ax, alpha = 0.4, color = "red")
-for traj in data_split[0:no_traj]:
+for traj in split_tst[0]:
     geometry = [Point(xy) for xy in zip([item/600000 for item in traj["path"]["Longitude"]], [item/600000 for item in traj["path"]["Latitude"]])]
     t = gpd.GeoDataFrame(crs = crs, geometry = geometry)
 

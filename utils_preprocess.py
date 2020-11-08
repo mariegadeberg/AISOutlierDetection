@@ -54,8 +54,9 @@ class Preprocess:
         disc_moored = 0
         disc_dur_min = 0
 
+
         for i, file in enumerate(files):
-            print(f"Preparing file: {i}")
+            #print(f"Preparing file: {i}")
             with open(file) as json_file:
                 js = json.load(json_file)[0]
 
@@ -72,7 +73,9 @@ class Preprocess:
                     disc_short += 1
                     continue
 
-                # Resamping and interpolating
+                intervals = [int(path[i + 1][0] - path[i][0]) for i in range(len(path) - 1)]
+
+                # Resampling and interpolating
                 df = self.resample_interpolate(path)
 
                 # Check and split path if longer than **threshold**
@@ -90,7 +93,7 @@ class Preprocess:
                     not_in_ROI = self.check_ROI(subpath)
                     perc_still, moored = self.check_moored(subpath)
 
-                    journey_time = df["Time"].iloc[-1] - df["Time"].iloc[0]
+                    journey_time = str(df["Time"].iloc[-1] - df["Time"].iloc[0])
 
                     if not_in_ROI:
                         disc_ROI += 1
@@ -100,9 +103,13 @@ class Preprocess:
                         continue
                     else:
                         js1 = js.copy()
-                        js1["path"] = df.to_dict("list")
+                        df1 = df.copy()
+                        df1["Time"] = df1["Time"].astype(str)
+                        js1["path"] = df1.to_dict("list")
                         js1["journey_time"] = journey_time
+                        js1["intervals_pre_interpolate"] = intervals
                         data_split.append(js1)
+
         stats = {"disc_short": disc_short,
                  "disc_ROI": disc_ROI,
                  "disc_moored": disc_moored,

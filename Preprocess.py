@@ -3,6 +3,7 @@ import pickle
 from Config import *
 import argparse
 from utils_preprocess import Preprocess
+import json
 
 parser = argparse.ArgumentParser()
 
@@ -22,6 +23,7 @@ data_split_cargo, stats_cargo = Preprocess(Config).split_and_collect_trajectorie
 data_split_tank, stats_tank = Preprocess(Config).split_and_collect_trajectories(tank_files, "Tank")
 
 if save_data:
+    print("Saving data...")
     with open("Code2.0/local_files/data_split_cargo.pcl", "wb") as f:
         pickle.dump(data_split_cargo, f)
     with open("Code2.0/local_files/stats_cargo.pcl", "wb") as s:
@@ -31,6 +33,7 @@ if save_data:
         pickle.dump(data_split_tank, f)
     with open("Code2.0/local_files/stats_tank.pcl", "wb") as s:
         pickle.dump(stats_tank, s)
+    print("Done!")
 
 
 #### EXPLORE ####
