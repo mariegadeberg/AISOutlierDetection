@@ -20,6 +20,9 @@ class Preprocess:
         self.long_min = Config.long_min
         self.long_max = Config.long_max
 
+        self.ROI_boundary_E = Config.ROI_boundary_E
+        self.ROI_boundary_W = Config.ROI_boundary_W
+
 
     def check_moored(self, df):
         perc_still = len(df[df.SOG <= 10]) / len(df)
@@ -36,8 +39,7 @@ class Preprocess:
 
         return not_in_ROI
 
-    def resample_interpolate(self, path):
-        df = pd.DataFrame(path, columns=["Time", "Latitude", "Longitude", "SOG", "COG", "Header"])
+    def resample_interpolate(self, df):
 
         df["Time"] = pd.to_datetime(df["Time"] + self.epoch_to_T0, unit="s")
         df = df.set_index('Time').resample(str(self.freq) + 'T').mean()
@@ -45,6 +47,21 @@ class Preprocess:
         df = df.reset_index(level=0, inplace=False)
 
         return df
+
+    def split_ROI(self, path):
+        df = pd.DataFrame(path, columns=["Time", "Latitude", "Longitude", "SOG", "COG", "Header"])
+
+        out_east = np.array([1 if val / 600000 < self.long_min else 0 for val in df.Longitude])
+        eastern_ROI = np.array([1 if val / 600000 < self.ROI_boundary_E else 0 for val in df.Longitude])
+        western_ROI = np.array([1 if val / 600000 > self.ROI_boundary_W else 0 for val in df.Longitude])
+
+        breaks = np.concatenate((np.where(western_ROI[:-1] != western_ROI[1:])[0] + 1,
+                                 np.where(eastern_ROI[:-1] != eastern_ROI[1:])[0] + 1,
+                                 np.where(out_east[:-1] != out_east[1:])[0] + 1), axis=0)
+
+        subpaths = np.array_split(df, np.sort(breaks))
+
+        return subpaths
 
     def split_and_collect_trajectories(self, files, category):
         print(f"Processing files of type: {category}")
@@ -73,42 +90,64 @@ class Preprocess:
                     disc_short += 1
                     continue
 
-                intervals = [int(path[i + 1][0] - path[i][0]) for i in range(len(path) - 1)]
-
-                # Resampling and interpolating
-                df = self.resample_interpolate(path)
-
-                # Check and split path if longer than **threshold**
-                idx = (np.arange(0, len(df) * self.freq * 60, self.threshold_dur_max) / (self.freq * 60)).astype(int)[1:]
-
-                subpaths = np.split(df, idx)
+                subpaths = self.split_ROI(path)
 
                 for subpath in subpaths:
 
-                    # dismissing path if shorter than **threshold** duration
-                    if (subpath["Time"].iloc[-1] - subpath["Time"].iloc[0]).total_seconds() < self.threshold_dur_min:
-                        disc_dur_min += 1
-                        continue
-
-                    not_in_ROI = self.check_ROI(subpath)
-                    perc_still, moored = self.check_moored(subpath)
-
-                    journey_time = str(df["Time"].iloc[-1] - df["Time"].iloc[0])
-
-                    if not_in_ROI:
+                    if any(subpath.Longitude < self.long_min * 600000):
                         disc_ROI += 1
                         continue
-                    elif moored:
-                        disc_moored += 1
+
+                    if any(subpath.Longitude > self.ROI_boundary_W * 600000):
+                        disc_ROI += 1
                         continue
+
+                    if len(subpath) < self.threshold_trajlen:
+                        disc_short += 1
+                        continue
+
+                    if all(subpath.Longitude < self.ROI_boundary_E * 600000):
+                        eastern = 1
                     else:
-                        js1 = js.copy()
-                        df1 = df.copy()
-                        df1["Time"] = df1["Time"].astype(str)
-                        js1["path"] = df1.to_dict("list")
-                        js1["journey_time"] = journey_time
-                        js1["intervals_pre_interpolate"] = intervals
-                        data_split.append(js1)
+                        eastern = 0
+
+                    #intervals = [int(path[i + 1][0] - path[i][0]) for i in range(len(path) - 1)]
+
+                    # Resampling and interpolating
+                    df = self.resample_interpolate(subpath)
+
+                    # Check and split path if longer than **threshold**
+                    idx = (np.arange(0, len(df) * self.freq * 60, self.threshold_dur_max) / (self.freq * 60)).astype(int)[1:]
+
+                    subsubpaths = np.split(df, idx)
+
+                    for subsubpath in subsubpaths:
+
+                        # dismissing path if shorter than **threshold** duration
+                        if (subsubpath["Time"].iloc[-1] - subsubpath["Time"].iloc[0]).total_seconds() < self.threshold_dur_min:
+                            disc_dur_min += 1
+                            continue
+
+                        #not_in_ROI = self.check_ROI(subsubpath)
+                        perc_still, moored = self.check_moored(subsubpath)
+
+                        #journey_time = str(df["Time"].iloc[-1] - df["Time"].iloc[0])
+
+                        #if not_in_ROI:
+                         #   disc_ROI += 1
+                          #  continue
+                        if moored:
+                            disc_moored += 1
+                            continue
+                        else:
+                            js1 = js.copy()
+                            df1 = subsubpath.copy()
+                            df1["Time"] = df1["Time"].astype(str)
+                            js1["path"] = df1.to_dict("list")
+                            js1["eastern"] = eastern
+                            #js1["journey_time"] = journey_time
+                            #js1["intervals_pre_interpolate"] = intervals
+                            data_split.append(js1)
 
         stats = {"disc_short": disc_short,
                  "disc_ROI": disc_ROI,

@@ -50,20 +50,20 @@ legend_lines = [Line2D([0], [0], color="blue", lw=2),
 fig, ax = plt.subplots(figsize = (10,5))
 dk.plot(ax = ax, alpha = 0.4, color = "grey")
 dk2.plot(ax = ax, alpha = 0.4, color = "red")
-for traj in split_tst[0]:
+for traj in data[0:no_traj]:
     geometry = [Point(xy) for xy in zip([item/600000 for item in traj["path"]["Longitude"]], [item/600000 for item in traj["path"]["Latitude"]])]
     t = gpd.GeoDataFrame(crs = crs, geometry = geometry)
 
-    if traj["shiptype"] == "Cargo":
+    if traj["eastern"] == 1:
         c = "blue"
-    elif traj["shiptype"] == "Tanker":
+    elif traj["eastern"] == 0:
         c = "green"
     else:
         c = "purple"
 
     t.plot(ax = ax, markersize = 2, color = c)
 plt.title(f"Map of Denmark with {no_traj} trajectories", fontsize = 15)
-ax.legend(legend_lines, ["Cargo", "Tanker"])
+ax.legend(legend_lines, ["Eastern Region Tracks", "Western Region Tracks"])
 if save_fig:
     plt.savefig(f"map{no_traj}.png")
 plt.show()

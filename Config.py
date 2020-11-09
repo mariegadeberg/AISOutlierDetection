@@ -12,8 +12,11 @@ class Config(object):
     ## Defining Region of Interest
     lat_min = 53
     lat_max = 58
-    long_min = 1
+    long_min = 4
     long_max = 17
+
+    ROI_boundary_E = 9.5
+    ROI_boundary_W = 13
 
     ## Set the maximum interval between AIS messages before splitting trajectory
     max_interval = 60 * 60 * 4
