@@ -111,8 +111,6 @@ class Preprocess:
                     else:
                         eastern = 0
 
-                    #intervals = [int(path[i + 1][0] - path[i][0]) for i in range(len(path) - 1)]
-
                     # Resampling and interpolating
                     df = self.resample_interpolate(subpath)
 
@@ -128,14 +126,8 @@ class Preprocess:
                             disc_dur_min += 1
                             continue
 
-                        #not_in_ROI = self.check_ROI(subsubpath)
                         perc_still, moored = self.check_moored(subsubpath)
 
-                        #journey_time = str(df["Time"].iloc[-1] - df["Time"].iloc[0])
-
-                        #if not_in_ROI:
-                         #   disc_ROI += 1
-                          #  continue
                         if moored:
                             disc_moored += 1
                             continue
@@ -145,8 +137,6 @@ class Preprocess:
                             df1["Time"] = df1["Time"].astype(str)
                             js1["path"] = df1.to_dict("list")
                             js1["eastern"] = eastern
-                            #js1["journey_time"] = journey_time
-                            #js1["intervals_pre_interpolate"] = intervals
                             data_split.append(js1)
 
         stats = {"disc_short": disc_short,
