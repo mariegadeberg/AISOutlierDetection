@@ -61,7 +61,7 @@ for traj in data[0:no_traj]:
     else:
         c = "purple"
 
-    t.plot(ax = ax, markersize = 2, color = c)
+    t.plot(ax = ax, markersize = 1, color = c)
 plt.title(f"Map of Denmark with {no_traj} trajectories", fontsize = 15)
 ax.legend(legend_lines, ["Eastern Region Tracks", "Western Region Tracks"])
 if save_fig:

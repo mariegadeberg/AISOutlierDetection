@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 class Config(object):
     '''
@@ -34,3 +35,14 @@ class Config(object):
     epoch_to_T0 = 1546297200
 
     freq = 10
+
+    max_knot = 300
+    sog_res = 1
+    sog_columns = range(0, int(max_knot / 10 + sog_res), sog_res)
+
+    cog_res = 5
+    cog_columns = range(0, 365, cog_res)
+
+    lat_long_res = 0.01
+    lat_columns = np.arange(lat_min, lat_max + lat_long_res, lat_long_res)
+    long_columns = np.arange(long_min, long_max + lat_long_res, lat_long_res)

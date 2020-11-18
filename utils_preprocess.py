@@ -23,6 +23,17 @@ class Preprocess:
         self.ROI_boundary_E = Config.ROI_boundary_E
         self.ROI_boundary_W = Config.ROI_boundary_W
 
+        self.max_knot = Config.max_knot
+        self.sog_res = Config.sog_res
+        self.sog_columns = Config.sog_columns
+
+        self.cog_res = Config.cog_res
+        self.cog_columns = Config.cog_columns
+
+        self.lat_long_res = Config.lat_long_res
+        self.lat_columns = Config.lat_columns
+        self.long_columns = Config.long_columns
+
 
     def check_moored(self, df):
         perc_still = len(df[df.SOG <= 10]) / len(df)
@@ -63,6 +74,46 @@ class Preprocess:
 
         return subpaths
 
+    def create_bins(self, feature_array, resolution, scaling_factor, upperbound=None, lowerbound=None):
+        if upperbound:
+            feature_array = [upperbound if coord > upperbound else coord for coord in feature_array]
+        if lowerbound:
+            feature_array = [lowerbound if coord < lowerbound else coord for coord in feature_array]
+
+        feature_array = [np.round(coord / (resolution * scaling_factor)) * resolution for coord in feature_array]
+
+        return feature_array
+
+    def one_hot_and_fill(self, feature_array, columns):
+        dummies = pd.get_dummies(feature_array)
+
+        for col in columns:
+            if col not in dummies.columns:
+                dummies[col] = 0
+
+        dummies = dummies.reindex(sorted(dummies.columns), axis=1)
+
+        return dummies
+
+    def four_hot_encode(self, path):
+        sog = self.create_bins(path["path"]["SOG"], self.sog_res, scaling_factor=10, upperbound=self.max_knot)
+        sog = self.one_hot_and_fill(sog, self.sog_columns)
+
+        cog = self.create_bins(path["path"]["COG"], self.cog_res, scaling_factor=10)
+        cog = self.one_hot_and_fill(cog, self.cog_columns)
+
+        lat = self.create_bins(path["path"]["Latitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.lat_max,
+                          lowerbound=self..lat_min)
+        lat = self.one_hot_and_fill(lat, self.lat_columns)
+
+        long = self.create_bins(path["path"]["Latitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.long_max,
+                           lowerbound=self.long_min)
+        long = self.one_hot_and_fill(long, self.long_columns)
+
+        data = np.concatenate((lat, long, sog, cog), axis=1)
+
+        return data
+
     def split_and_collect_trajectories(self, files, category):
         print(f"Processing files of type: {category}")
         data_split = []
@@ -73,7 +124,8 @@ class Preprocess:
 
 
         for i, file in enumerate(files):
-            #print(f"Preparing file: {i}")
+            if i % 100 == 0:
+                print(f"Preparing file {i}/{len(files)}")
             with open(file) as json_file:
                 js = json.load(json_file)[0]
 
@@ -137,6 +189,7 @@ class Preprocess:
                             df1["Time"] = df1["Time"].astype(str)
                             js1["path"] = df1.to_dict("list")
                             js1["eastern"] = eastern
+                            js1["FourHot"] = self.four_hot_encode(js1["path"])
                             data_split.append(js1)
 
         stats = {"disc_short": disc_short,
