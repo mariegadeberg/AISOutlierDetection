@@ -1,6 +1,9 @@
 import pandas as pd
 import json
 import numpy as np
+from scipy import sparse
+import torch
+import pickle
 
 class Preprocess:
     def __init__(self, Config):
@@ -74,43 +77,44 @@ class Preprocess:
 
         return subpaths
 
-    def create_bins(self, feature_array, resolution, scaling_factor, upperbound=None, lowerbound=None):
+    def create_bins(self, feature_array, resolution, scaling_factor, upperbound=None, lowerbound=None, kind = None):
         if upperbound:
+            upperbound = upperbound * scaling_factor
             feature_array = [upperbound if coord > upperbound else coord for coord in feature_array]
         if lowerbound:
+            lowerbound = lowerbound * scaling_factor
             feature_array = [lowerbound if coord < lowerbound else coord for coord in feature_array]
+
+        if kind == "coordinate":
+            feature_array = [np.round(np.round(coord / (resolution * scaling_factor)) * resolution,2) for coord in feature_array]
+            return feature_array
 
         feature_array = [np.round(coord / (resolution * scaling_factor)) * resolution for coord in feature_array]
 
         return feature_array
 
-    def one_hot_and_fill(self, feature_array, columns):
+    def one_hot_and_fill(self, feature_array, cols):
         dummies = pd.get_dummies(feature_array)
-
-        for col in columns:
-            if col not in dummies.columns:
-                dummies[col] = 0
-
-        dummies = dummies.reindex(sorted(dummies.columns), axis=1)
+        dummies = dummies.reindex(columns=cols).fillna(0)
 
         return dummies
 
     def four_hot_encode(self, path):
-        sog = self.create_bins(path["path"]["SOG"], self.sog_res, scaling_factor=10, upperbound=self.max_knot)
+        sog = self.create_bins(path["SOG"], self.sog_res, scaling_factor=10, upperbound=self.max_knot)
         sog = self.one_hot_and_fill(sog, self.sog_columns)
 
-        cog = self.create_bins(path["path"]["COG"], self.cog_res, scaling_factor=10)
+        cog = self.create_bins(path["COG"], self.cog_res, scaling_factor=10)
         cog = self.one_hot_and_fill(cog, self.cog_columns)
 
-        lat = self.create_bins(path["path"]["Latitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.lat_max,
-                          lowerbound=self..lat_min)
-        lat = self.one_hot_and_fill(lat, self.lat_columns)
+        lat = self.create_bins(path["Latitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.lat_max,
+                          lowerbound=self.lat_min, kind="coordinate")
+        lat = self.one_hot_and_fill(lat, cols = pd.Float64Index(np.round(self.lat_columns, 2)))
 
-        long = self.create_bins(path["path"]["Latitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.long_max,
-                           lowerbound=self.long_min)
-        long = self.one_hot_and_fill(long, self.long_columns)
+        long = self.create_bins(path["Longitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.long_max,
+                           lowerbound=self.long_min, kind="coordinate")
+        long = self.one_hot_and_fill(long, cols = pd.Float64Index(np.round(self.long_columns, 2)))
 
-        data = np.concatenate((lat, long, sog, cog), axis=1)
+        data = sparse.csr_matrix(np.concatenate((lat, long, sog, cog), axis=1))
 
         return data
 
@@ -200,4 +204,69 @@ class Preprocess:
         return data_split, stats
 
 
+class AISDataset(torch.utils.data.Dataset):
+    def __init__(self, path):
+        self.path = path
 
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def __getitem__(self, idx):
+        return torch.tensor(self.dataset[idx]["FourHot"].todense(), dtype=torch.float)
+
+
+def pad_tensor(vec, pad, dim):
+    """
+    args:
+        vec - tensor to pad
+        pad - the size to pad to
+        dim - dimension to pad
+
+    return:
+        a new tensor padded to 'pad' in dimension 'dim'
+    """
+    pad_size = list(vec.shape)
+    pad_size[dim] = pad - vec.size(dim)
+    return torch.cat([vec, torch.zeros(*pad_size)], dim=dim)
+
+
+class PadCollate:
+    """
+    a variant of callate_fn that pads according to the longest sequence in
+    a batch of sequences
+    """
+
+    def __init__(self, dim=0):
+        """
+        args:
+            dim - the dimension to be padded (dimension of time in sequences)
+        """
+        self.dim = dim
+
+    def pad_collate(self, batch):
+        """
+        args:
+            batch - list of (tensor, label)
+
+        reutrn:
+            xs - a tensor of all examples in 'batch' after padding
+            ys - a LongTensor of all labels in batch
+        """
+        # find longest sequence
+        max_len = max(map(lambda x: x.shape[self.dim], batch))
+        #print(f"max_length = {list(max_len)}")
+        # pad according to max_len
+        batch = list(map(lambda x:
+                        pad_tensor(x, pad=max_len, dim=self.dim), batch))
+        #print(f"Inside collate function: type of variabel 'batch' -> {batch.type()}")
+        #print(f"Inside collate function: size of variabel 'batch' -> {batch[0].size()}")
+
+        # stack all
+        xs = torch.stack(batch, dim=0)
+        return xs
+
+    def __call__(self, batch):
+        return self.pad_collate(batch)

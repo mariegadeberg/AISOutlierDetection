@@ -36,9 +36,9 @@ class Config(object):
 
     freq = 10
 
-    max_knot = 300
+    max_knot = 30
     sog_res = 1
-    sog_columns = range(0, int(max_knot / 10 + sog_res), sog_res)
+    sog_columns = range(0, int(max_knot + sog_res), sog_res)
 
     cog_res = 5
     cog_columns = range(0, 365, cog_res)

@@ -1,11 +1,16 @@
 from model import VRNN
 import torch
 from torch.utils.data import DataLoader
-import pickle
+from utils_preprocess import AISDataset
+from Config import *
+from utils_preprocess import PadCollate
+import matplotlib.pyplot as plt
 
-num_epoch = 5
+path = Config.path
+
+num_epoch = 3
 beta = 1
-input_shape = 2410
+input_shape = 1907
 latent_shape = 100
 
 model = VRNN(input_shape, latent_shape, beta)
@@ -16,19 +21,17 @@ epoch = 0
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
-train_ds = AISDataset("Code2.0/local_files/test_data.pcl")
+train_ds = AISDataset(path+"/Code2.0/local_files/data_split_cargo.pcl")
 
-train_loader = torch.utils.data.DataLoader(train_ds, 1, True)
+train_loader = torch.utils.data.DataLoader(train_ds, batch_size=1, shuffle=True, collate_fn=PadCollate(dim=0))
 
 # move the model to the device
 model = model.to(device)
-
-
+loss_epochs = []
+batch_loss = []
 while epoch < num_epoch:
-    epoch += 1
     model.train()
     train_loss = 0
-
     for inputs in train_loader:
         inputs = inputs.to(device)
 
@@ -38,31 +41,24 @@ while epoch < num_epoch:
         loss.backward()
         optimizer.step()
 
-    train_loss += loss.data
+        batch_loss.append(loss)
 
-    print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(train_loader.dataset)))
+        train_loss += loss.data
 
+    loss_epochs.append(train_loss / len(train_loader.dataset))
 
-class AISDataset(torch.utils.data.Dataset):
-    def __init__(self, path):
-        self.path = path
-
-        with open(self.path, "rb") as f:
-            self.dataset = pickle.load(f)
-
-    def __len__(self):
-        return(len(self.dataset))
-
-    def __getitem__(self, idx):
-        return torch.tensor(self.dataset[idx]["FourHot"], dtype=torch.float)
+    print('====> Epoch: {} Average loss: {:.6f}'.format(epoch, train_loss / len(train_loader.dataset)))
+    epoch += 1
 
 
 
 
 
-i = 0
-while i < 1:
-    for inputs in dataloader:
-        loss, loss_list = model(inputs)
-        i+=1
+i=0
+for data in train_loader:
+    while i < 1:
+        print(data.shape)
+        i += 1
+
+
 

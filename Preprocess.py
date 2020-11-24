@@ -16,6 +16,7 @@ save_data = args.save_data
 
 ## Running preprocessing
 
+
 cargo_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Carg*.json")
 tank_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Tank*.json")
 
