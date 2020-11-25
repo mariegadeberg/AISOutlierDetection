@@ -55,9 +55,9 @@ class VRNN(nn.Module):
 
         #self.batch_size = inputs.size(0)
 
-        out = Variable(torch.zeros(1, 1, self.latent_shape))
-        h = Variable(torch.zeros(1, 1, self.latent_shape))
-        c = Variable(torch.zeros(1, 1, self.latent_shape))
+        out = torch.zeros(1, 1, self.latent_shape)
+        h = torch.zeros(1, 1, self.latent_shape)
+        c = torch.zeros(1, 1, self.latent_shape)
 
         acc_loss = 0
         loss_list = []
