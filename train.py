@@ -72,10 +72,10 @@ while epoch < num_epoch:
         loss.backward()
         optimizer.step()
 
-        epoch_train_kl += np.mean(diagnostics["kl"])
-        epoch_train_logpx += np.mean(diagnostics["log_px"])
+        epoch_train_kl += torch.mean(diagnostics["kl"]).item()
+        epoch_train_logpx += torch.mean(diagnostics["log_px"]).item()
 
-        epoch_train_loss += loss.data
+        epoch_train_loss += loss.item()
 
     writer.add_scalar("Loss/train", epoch_train_loss, epoch)
     writer.add_scalar("KL/train", epoch_train_kl, epoch)
@@ -89,10 +89,10 @@ while epoch < num_epoch:
 
             loss, diagnostics = model(inputs)
 
-            epoch_val_kl += np.mean(diagnostics["kl"])
-            epoch_val_logpx += np.mean(diagnostics["log_px"])
+            epoch_val_kl += torch.mean(diagnostics["kl"]).item()
+            epoch_val_logpx += torch.mean(diagnostics["log_px"]).item()
 
-            epoch_val_loss += loss
+            epoch_val_loss += loss.item()
 
         writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
         writer.add_scalar("KL/validation", epoch_val_kl, epoch)
