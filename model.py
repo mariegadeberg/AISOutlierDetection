@@ -35,6 +35,9 @@ class VRNN(nn.Module):
 
         self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape)
 
+        self.register_buffer('out', torch.zeros(1, 1, self.latent_shape))
+        self.register_buffer('h', torch.zeros(1, 1, self.latent_shape))
+        self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
     def _prior(self, h):
         hidden = self.prior(h)
@@ -55,9 +58,13 @@ class VRNN(nn.Module):
 
         #self.batch_size = inputs.size(0)
 
-        out = torch.zeros(1, 1, self.latent_shape)
-        h = torch.zeros(1, 1, self.latent_shape)
-        c = torch.zeros(1, 1, self.latent_shape)
+        #out = torch.zeros(1, 1, self.latent_shape)
+        #h = torch.zeros(1, 1, self.latent_shape)
+        #c = torch.zeros(1, 1, self.latent_shape)
+
+        out = self.out
+        h = self.h
+        c = self.c
 
         acc_loss = 0
         loss_list = []
