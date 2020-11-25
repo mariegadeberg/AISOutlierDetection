@@ -16,24 +16,37 @@ save_data = args.save_data
 
 ## Running preprocessing
 
+months = ["1911", "1912", "2001", "2002", "2003"]
+ship_types = ["Carg", "Tank"]
 
-cargo_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Carg*.json")
-tank_files = glob.glob(path + "/Data/aisMixJSONX_1912XX/Tank*.json")
+ds_train = []
+ds_val = []
+ds_test = []
+stat = {}
 
-data_split_cargo, stats_cargo = Preprocess(Config).split_and_collect_trajectories(cargo_files, "Cargo")
-data_split_tank, stats_tank = Preprocess(Config).split_and_collect_trajectories(tank_files, "Tank")
+for month in months:
+    for cat in ship_types:
+        files = glob.glob(path + "aisMixJSON_" + month + "XX/" + cat + "*.json")
+
+        train, val, test, stats = Preprocess(Config).split_and_collect_trajectories(files, month=month, category=cat)
+
+        ds_train += train
+        ds_val += val
+        ds_test += test
+
+        stat[month] = stats
+
 
 if save_data:
     print("Saving data...")
-    with open("Code2.0/local_files/data_split_cargo.pcl", "wb") as f:
-        pickle.dump(data_split_cargo, f)
-    with open("Code2.0/local_files/stats_cargo.pcl", "wb") as s:
-        pickle.dump(stats_cargo, s)
-
-    with open("Code2.0/local_files/data_split_tank.pcl", "wb") as f:
-        pickle.dump(data_split_tank, f)
-    with open("Code2.0/local_files/stats_tank.pcl", "wb") as s:
-        pickle.dump(stats_tank, s)
+    with open(path + "data/train.pcl", "wb") as f:
+        pickle.dump(ds_train, f)
+    with open(path + "data/val.pcl", "wb") as f:
+        pickle.dump(ds_val, f)
+    with open(path + "data/test.pcl", "wb") as f:
+        pickle.dump(ds_test, f)
+    with open(path + "data/stats.pcl", "wb") as f:
+        pickle.dump(stat, f)
     print("Done!")
 
 

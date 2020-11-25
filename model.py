@@ -33,7 +33,7 @@ class VRNN(nn.Module):
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),
                                      nn.ReLU())
 
-        self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape, batch_first=True)
+        self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape)
 
 
     def _prior(self, h):
@@ -42,63 +42,71 @@ class VRNN(nn.Module):
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def posterior(self, hidden, x):
-        hidden = self.encoder(torch.cat([hidden, x], dim=1))
+        #hidden = self.encoder(torch.cat([hidden, x], dim=1))
+        hidden = self.encoder(torch.cat([hidden, x]))
         mu, log_sigma = hidden.chunk(2, dim=-1)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
-        px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
+        px_logits = self.decoder(torch.cat([z_enc, h]))
         return Bernoulli(logits=px_logits)
 
     def forward(self, inputs):
 
-        self.batch_size = inputs.size(0)
+        #self.batch_size = inputs.size(0)
 
-        out = Variable(torch.zeros(self.batch_size, 1, self.latent_shape))
-        h = Variable(torch.zeros(1, self.batch_size, self.latent_shape))
-        c = Variable(torch.zeros(1, self.batch_size, self.latent_shape))
+        out = Variable(torch.zeros(1, 1, self.latent_shape))
+        h = Variable(torch.zeros(1, 1, self.latent_shape))
+        c = Variable(torch.zeros(1, 1, self.latent_shape))
 
         acc_loss = 0
         loss_list = []
+        kl_list = []
+        log_px_list = []
 
-        for t in range(inputs.size(1)):
+        for x in inputs[0]:
 
             #Embed input
-            x_hat = self.phi_x(inputs[:,t,:])
+            x_hat = self.phi_x(x)
 
             #Create prior distribution
             pz = self._prior(out[-1][-1])
 
             #Create approximate posterior
-            qz = self.posterior(out.squeeze(), x_hat)
+            qz = self.posterior(out[-1][-1], x_hat)
 
             #Sample and embed z from posterior
             z = qz.rsample()
             z_hat = self.phi_z(z)
 
             #Decode z_hat
-            px = self.generative(z_hat, out.squeeze())
+            px = self.generative(z_hat, out[-1][-1])
 
             #Update h form LSTM
-            rnn_input = torch.cat([x_hat, z_hat], dim=1)
-            rnn_input = rnn_input.unsqueeze(1)
+            #rnn_input = torch.cat([x_hat, z_hat], dim=1)
+            rnn_input = torch.cat([x_hat, z_hat])
+            rnn_input = rnn_input.view(1, 1, rnn_input.size(0))
+            #rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
 
             #Calulating loss
-            log_px = px.log_prob(inputs[:,t,:]).sum(axis=1)
-            log_pz = pz.log_prob(z).sum(axis=1)
-            log_qz = qz.log_prob(z).sum(axis=1)
+            log_px = px.log_prob(x).sum()
+            log_pz = pz.log_prob(z).sum()
+            log_qz = qz.log_prob(z).sum()
 
             kl = log_qz - log_pz
             elbo_beta = log_px - self.beta * kl
 
             acc_loss += -elbo_beta.mean()
+
             loss_list.append(-elbo_beta)
+            kl_list.append(kl)
+            log_px_list.append(log_px)
 
-        #with torch.no_grad():
-        #        diagnostics = {'acc_loss': acc_loss, 'log_px': log_px, 'kl': kl}
+        with torch.no_grad():
+                diagnostics = {'loss_list': loss_list, 'log_px': log_px_list, 'kl': kl_list}
 
-        return acc_loss, loss_list
+        return acc_loss, diagnostics
 
 
 class ReparameterizedDiagonalGaussian(Distribution):

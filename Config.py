@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 
 class Config(object):
     '''
@@ -7,8 +8,13 @@ class Config(object):
     '''
 
     ## Setting path for project
-    os.chdir('/Users/mariegadeberg/OneDrive/Uni/Speciale/AIS')
-    path = os.getcwd()
+    #os.chdir('/Users/mariegadeberg/OneDrive/Uni/Speciale/AIS')
+    #path = os.getcwd()
+    path = "/Volumes/MNG/"
+
+    train_cuttime = pd.Timestamp(2020, 3, 10)
+    val_cuttime = pd.Timestamp(2020, 3, 20)
+
 
     ## Defining Region of Interest
     lat_min = 53
@@ -46,3 +52,8 @@ class Config(object):
     lat_long_res = 0.01
     lat_columns = np.arange(lat_min, lat_max + lat_long_res, lat_long_res)
     long_columns = np.arange(long_min, long_max + lat_long_res, lat_long_res)
+
+    # -------------------- Used during training ----------------------#
+
+    input_shape = 1907
+    latent_shape = 100

@@ -4,6 +4,7 @@ import numpy as np
 from scipy import sparse
 import torch
 import pickle
+import datetime
 
 class Preprocess:
     def __init__(self, Config):
@@ -36,6 +37,9 @@ class Preprocess:
         self.lat_long_res = Config.lat_long_res
         self.lat_columns = Config.lat_columns
         self.long_columns = Config.long_columns
+
+        self.train_cuttime = Config.train_cuttime
+        self.val_cuttime = Config.val_cuttime
 
 
     def check_moored(self, df):
@@ -118,9 +122,12 @@ class Preprocess:
 
         return data
 
-    def split_and_collect_trajectories(self, files, category):
-        print(f"Processing files of type: {category}")
-        data_split = []
+    def split_and_collect_trajectories(self, files, month, category):
+        print(f"Processing files from month: {month}")
+        print(f"===> of type: {category}")
+        data_train = []
+        data_val = []
+        data_test = []
         disc_short = 0
         disc_ROI = 0
         disc_moored = 0
@@ -194,14 +201,23 @@ class Preprocess:
                             js1["path"] = df1.to_dict("list")
                             js1["eastern"] = eastern
                             js1["FourHot"] = self.four_hot_encode(js1["path"])
-                            data_split.append(js1)
+                            if all(subsubpath["Time"] < self.train_cuttime):
+                                data_train.append(js1)
+                            elif all(subsubpath["Time"] < self.val_cuttime):
+                                data_val.append(js1)
+                            else:
+                                data_test.append(js1)
+
 
         stats = {"disc_short": disc_short,
                  "disc_ROI": disc_ROI,
                  "disc_moored": disc_moored,
-                 "disc_dur_min": disc_dur_min}
+                 "disc_dur_min": disc_dur_min,
+                 "train_no": len(data_train),
+                 "val_no": len(data_val),
+                 "test_no": len(data_test)}
 
-        return data_split, stats
+        return data_train, data_val, data_test, stats
 
 
 class AISDataset(torch.utils.data.Dataset):
