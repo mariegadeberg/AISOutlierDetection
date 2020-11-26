@@ -18,7 +18,7 @@ parser.add_argument("--path", type=str, default="./", help="Which directory to f
 parser.add_argument("--num_epoch", type=int, default=1, help="How many epochs should run during training")
 parser.add_argument("--beta", type=int, default=1, help="The size of the regularization coefficient 'beta'")
 parser.add_argument("--save_dir", type=str, default="./models/", help="Directory to save model")
-parser.add_argument("--print_every", type=int, default=10, help="Determines how often it print to terminal. Default every 10th epoch")
+parser.add_argument("--print_every", type=int, default=1, help="Determines how often it print to terminal. Default every 10th epoch")
 
 args = parser.parse_args()
 
@@ -52,8 +52,9 @@ val_loader = torch.utils.data.DataLoader(val_ds, batch_size=1, shuffle=True)
 model = model.to(device)
 training_loss = []
 val_loss = []
+print(f"Training initialized...")
 while epoch < num_epoch:
-
+    print(f"--> Training started for epoch {epoch}")
     epoch_train_loss = 0
     epoch_val_loss = 0
 
@@ -64,13 +65,13 @@ while epoch < num_epoch:
     epoch_val_logpx = 0
 
     model.train()
-    i = 1
+    i = 0
     for inputs in train_loader:
 
         inputs = inputs.to(device)
 
-        #if i % 10 == 0:
-        #    print(f"---> passing input {i}/{len(train_loader)}")
+        if i % 1000 == 0:
+            print(f"     passing input {i}/{len(train_loader)}")
 
         loss, diagnostics = model(inputs)
 
@@ -85,7 +86,7 @@ while epoch < num_epoch:
 
         #i += 1
 
-    #print(f"Training done, starting validation")
+    print(f"--> Validation started for epoch {epoch}")
 
     writer.add_scalar("Loss/train", epoch_train_loss, epoch)
     writer.add_scalar("KL/train", epoch_train_kl, epoch)
@@ -93,13 +94,9 @@ while epoch < num_epoch:
 
     model.eval()
 
-    k = 1
     with torch.no_grad():
         for inputs in val_loader:
             inputs = inputs.to(device)
-
-            #if k % 100 == 0:
-            #    print(f"----> passing validation {k}/{len(val_loader)}")
 
             loss, diagnostics = model(inputs)
 
@@ -108,7 +105,6 @@ while epoch < num_epoch:
 
             epoch_val_loss += loss.item()
 
-            k += 1
 
         #print("Validation done")
         writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
