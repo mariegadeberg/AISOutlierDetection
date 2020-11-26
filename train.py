@@ -42,7 +42,7 @@ epoch = 0
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
-train_ds = AISDataset(path+"data/train_small.pcl")
+train_ds = AISDataset(path+"data/train.pcl")
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=1, shuffle=True)
 
 val_ds = AISDataset(path+"data/val.pcl")
