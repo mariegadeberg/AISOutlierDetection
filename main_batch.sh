@@ -38,7 +38,6 @@ module unload cuda
 module unload cudnn
 
 # load modules
-module load python3/3.6.2
 module load cuda/10.2
 module load cudnn/v7.6.5.32-prod-cuda-10.2
 
