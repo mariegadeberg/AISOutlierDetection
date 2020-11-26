@@ -53,7 +53,6 @@ model = model.to(device)
 training_loss = []
 val_loss = []
 while epoch < num_epoch:
-    #print(f"Starting epoch {epoch}")
 
     epoch_train_loss = 0
     epoch_val_loss = 0
