@@ -12,9 +12,9 @@
 ### -- select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- specify that we need 5GB of memory per core/slot --
-#BSUB -R "rusage[mem=5GB]"
-### -- specify that we want the job to get killed if it exceeds 5 GB per core/slot -- 
-#BSUB -M 10GB
+#BSUB -R "rusage[mem=12GB]"
+### -- specify that we want the job to get killed if it exceeds 12 GB per core/slot -- 
+#BSUB -M 48GB
 ### -- set walltime limit: hh:mm -- Maximum of 24 hours --
 #BSUB -W 24:00 
 
