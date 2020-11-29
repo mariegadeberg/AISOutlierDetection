@@ -16,7 +16,7 @@
 ### -- specify that we want the job to get killed if it exceeds 12 GB per core/slot -- 
 ### BSUB -M 48GB
 ### -- set walltime limit: hh:mm -- Maximum of 24 hours --
-#BSUB -W 24:00 
+#BSUB -W 6:00 
 
 ### -- user email address --
 #BSUB -u s153382@student.dtu.dk
@@ -42,4 +42,4 @@ module load cuda/10.2
 module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train.py --num_epoch 10
+python AISOutlierDetection/train.py --num_epoch 10 --data "train_small.pcl"
