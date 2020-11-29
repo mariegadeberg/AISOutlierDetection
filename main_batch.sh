@@ -34,12 +34,12 @@
 # here follow the commands you want to execute
 
 # Unload already installed software
-module unload cuda
-module unload cudnn
+#module unload cuda
+#module unload cudnn
 
 # load modules
-module load cuda/10.2
-module load cudnn/v7.6.5.32-prod-cuda-10.2
+#module load cuda/10.2
+#module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
 python AISOutlierDetection/train.py --num_epoch 10 --data "train_small.pcl"
