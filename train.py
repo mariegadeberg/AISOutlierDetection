@@ -4,9 +4,7 @@ from torch.utils.data import DataLoader
 from utils_preprocess import AISDataset
 from Config import *
 from utils_preprocess import PadCollate
-import matplotlib.pyplot as plt
 import argparse
-import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import pickle
 
