@@ -6,15 +6,15 @@
 #BSUB -q gpuv100
 
 ### -- ask for number of cores (default: 1) -- 
-#BSUB -n 8
+#BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- specify that we need 5GB of memory per core/slot --
-#BSUB -R "rusage[mem=32GB]"
+#BSUB -R "rusage[mem=2GB]"
 ### -- specify that we want the job to get killed if it exceeds 12 GB per core/slot -- 
-### BSUB -M 48GB
+### BSUB -M 10GB
 ### -- set walltime limit: hh:mm -- Maximum of 24 hours --
 #BSUB -W 24:00 
 
@@ -42,4 +42,4 @@
 #module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train.py --num_epoch 10 --train "train_small.pcl" --val "val_small.pcl"
+python AISOutlierDetection/train.py --num_epoch 100 --train "train_small.pcl" --val "val_small.pcl"
