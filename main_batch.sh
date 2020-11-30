@@ -16,7 +16,7 @@
 ### -- specify that we want the job to get killed if it exceeds 12 GB per core/slot -- 
 ### BSUB -M 48GB
 ### -- set walltime limit: hh:mm -- Maximum of 24 hours --
-#BSUB -W 6:00 
+#BSUB -W 24:00 
 
 ### -- user email address --
 #BSUB -u s153382@student.dtu.dk
