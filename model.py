@@ -4,6 +4,7 @@ from torch import nn, Tensor
 from torch.nn.functional import softplus
 from torch.distributions import Distribution
 from torch.distributions import Bernoulli
+import numpy as np
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -111,7 +112,7 @@ class VRNN(nn.Module):
             log_px_list.append(log_px)
 
         with torch.no_grad():
-            diagnostics = {'loss_list': loss_list, 'log_px': log_px_list, 'kl': kl_list}
+            diagnostics = {'loss_list': np.array(loss_list), 'log_px': np.array(log_px_list), 'kl': np.array(kl_list)}
 
         return acc_loss, diagnostics
 
