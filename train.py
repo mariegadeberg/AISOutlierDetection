@@ -81,8 +81,8 @@ while epoch < num_epoch:
         loss.backward()
         optimizer.step()
 
-        epoch_train_kl += torch.mean(torch.stack(diagnostics["kl"]))
-        epoch_train_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
+        #epoch_train_kl += torch.mean(torch.stack(diagnostics["kl"]))
+        #epoch_train_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
 
         epoch_train_loss += loss.item()
 
@@ -91,8 +91,8 @@ while epoch < num_epoch:
     print(f"--> Validation started for epoch {epoch}")
 
     writer.add_scalar("Loss/train", epoch_train_loss, epoch)
-    writer.add_scalar("KL/train", epoch_train_kl, epoch)
-    writer.add_scalar("Log_px/train", epoch_train_logpx, epoch)
+    #writer.add_scalar("KL/train", epoch_train_kl, epoch)
+    #writer.add_scalar("Log_px/train", epoch_train_logpx, epoch)
 
     model.eval()
 
@@ -102,16 +102,16 @@ while epoch < num_epoch:
 
             loss, diagnostics = model(inputs)
 
-            epoch_val_kl += torch.mean(torch.stack(diagnostics["kl"]))
-            epoch_val_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
+            #epoch_val_kl += torch.mean(torch.stack(diagnostics["kl"]))
+            #epoch_val_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
 
             epoch_val_loss += loss.item()
 
 
         #print("Validation done")
         writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
-        writer.add_scalar("KL/validation", epoch_val_kl, epoch)
-        writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
+        #writer.add_scalar("KL/validation", epoch_val_kl, epoch)
+        #writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
 
     training_loss.append(epoch_train_loss/len(train_loader))
     val_loss.append(epoch_val_loss/len(val_loader))
