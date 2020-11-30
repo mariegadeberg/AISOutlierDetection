@@ -20,7 +20,7 @@ class Config(object):
     lat_min = 53
     lat_max = 58
     long_min = 4
-    long_max = 17
+    long_max = 8.5
 
     ROI_boundary_E = 9.5
     ROI_boundary_W = 13
@@ -34,7 +34,7 @@ class Config(object):
     ## Set thresholds for durations
     threshold_trajlen = 20
     threshold_dur_min = 4*60*60
-    threshold_dur_max = 24*60*60
+    threshold_dur_max = 6*60*60
 
 
     ## Time in seconds from epoch to T0 of dataset

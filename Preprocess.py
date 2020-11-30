@@ -8,15 +8,22 @@ import json
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--save_data", type=bool, default=True, help="Whether to save the data generated in the preprocessing")
+parser.add_argument("--name", type=str, default="", help="Add subscript to saved data")
+parser.add_argument("--months", type=str, default="all", help="Which months to include in data")
 
 args = parser.parse_args()
 
 path = Config.path
 save_data = args.save_data
+name = args.name
+months_ = args.months
 
 ## Running preprocessing
+if months_ == "all":
+    months = ["1911", "1912", "2001", "2002", "2003"]
+else:
+    months = ["1911"]
 
-months = ["1911", "1912", "2001", "2002", "2003"]
 ship_types = ["Carg", "Tank"]
 
 ds_train = []
@@ -36,16 +43,20 @@ for month in months:
 
         stat[month] = stats
 
+print(f"Processing done. Size of dataset:")
+print(f"-----Train: {len(ds_train)}")
+print(f"-----Validation: {len(ds_val)}")
+print(f"-----Test: {len(ds_test)}")
 
 if save_data:
     print("Saving data...")
-    with open(path + "data/train.pcl", "wb") as f:
+    with open(path + "data/train"+name+".pcl", "wb") as f:
         pickle.dump(ds_train, f)
-    with open(path + "data/val.pcl", "wb") as f:
+    with open(path + "data/val"+name+".pcl", "wb") as f:
         pickle.dump(ds_val, f)
-    with open(path + "data/test.pcl", "wb") as f:
+    with open(path + "data/test"+name+".pcl", "wb") as f:
         pickle.dump(ds_test, f)
-    with open(path + "data/stats.pcl", "wb") as f:
+    with open(path + "data/stats"+name+".pcl", "wb") as f:
         pickle.dump(stat, f)
     print("Done!")
 
