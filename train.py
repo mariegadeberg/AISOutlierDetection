@@ -17,7 +17,8 @@ parser.add_argument("--num_epoch", type=int, default=1, help="How many epochs sh
 parser.add_argument("--beta", type=int, default=1, help="The size of the regularization coefficient 'beta'")
 parser.add_argument("--save_dir", type=str, default="./models/", help="Directory to save model")
 parser.add_argument("--print_every", type=int, default=1, help="Determines how often it print to terminal. Default every 10th epoch")
-parser.add_argument("--data", type=str, default="train.pcl", help="What training data should be used")
+parser.add_argument("--train", type=str, default="train.pcl", help="What training data should be used")
+parser.add_argument("--val", type=str, default="val.pcl", help="What training data should be used")
 
 args = parser.parse_args()
 
@@ -26,7 +27,8 @@ beta = args.beta
 path = args.path
 save_dir = args.save_dir
 print_every = args.print_every
-data_ = args.data
+train_ = args.train
+val_ = args.val
 
 input_shape = Config.input_shape
 latent_shape = Config.latent_shape
@@ -42,10 +44,10 @@ epoch = 0
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
-train_ds = AISDataset(path+"data/"+data_)
+train_ds = AISDataset(path+"data/"+train_)
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=1, shuffle=True)
 
-val_ds = AISDataset(path+"data/val.pcl")
+val_ds = AISDataset(path+"data/"+val_)
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=1, shuffle=True)
 
 # move the model to the device

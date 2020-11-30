@@ -53,7 +53,9 @@ class Config(object):
     lat_columns = np.arange(lat_min, lat_max + lat_long_res, lat_long_res)
     long_columns = np.arange(long_min, long_max + lat_long_res, lat_long_res)
 
+    total_bins = len(sog_columns) + len(cog_columns) + len(lat_columns) + len(long_columns)
+
     # -------------------- Used during training ----------------------#
 
-    input_shape = 1907
+    input_shape = total_bins
     latent_shape = 100
