@@ -4,10 +4,11 @@ from Config import *
 import argparse
 from utils_preprocess import Preprocess
 import json
+import sys
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--save_data", type=bool, default=True, help="Whether to save the data generated in the preprocessing")
+parser.add_argument("--save_data", type=str, default="True", help="Whether to save the data generated in the preprocessing")
 parser.add_argument("--name", type=str, default="", help="Add subscript to saved data")
 parser.add_argument("--months", type=str, default="all", help="Which months to include in data")
 
@@ -18,17 +19,34 @@ save_data = args.save_data
 name = args.name
 months_ = args.months
 
+if save_data == "True":
+    save_data = True
+elif save_data == "False":
+    save_data = False
+else:
+    print("Argument for saving data not recognized")
+
+
 ## Running preprocessing
 if months_ == "all":
-    months = ["1911", "1912", "2001", "2002", "2003"]
+    months = ["2001", "2002", "2003"]
 else:
     months = ["1911"]
 
 ship_types = ["Carg", "Tank"]
 
-ds_train = []
-ds_val = []
-ds_test = []
+ds_train_bh = []
+ds_val_bh = []
+ds_test_bh = []
+
+ds_train_sk = []
+ds_val_sk = []
+ds_test_sk = []
+
+ds_train_blt = []
+ds_val_blt = []
+ds_test_blt = []
+
 stat = {}
 
 for month in months:
@@ -37,25 +55,58 @@ for month in months:
 
         train, val, test, stats = Preprocess(Config).split_and_collect_trajectories(files, month=month, category=cat)
 
-        ds_train += train
-        ds_val += val
-        ds_test += test
+        ds_train_bh += train["bh"]
+        ds_val_bh += val["bh"]
+        ds_test_bh += test["bh"]
+
+        ds_train_sk += train["sk"]
+        ds_val_sk += val["sk"]
+        ds_test_sk += test["sk"]
+
+        ds_train_blt += train["blt"]
+        ds_val_blt += val["blt"]
+        ds_test_blt += test["blt"]
 
         stat[month] = stats
 
-print(f"Processing done. Size of dataset:")
-print(f"-----Train: {len(ds_train)}")
-print(f"-----Validation: {len(ds_val)}")
-print(f"-----Test: {len(ds_test)}")
+print(f"Processing done. Size of dataset follows.")
+print("Bornholm:")
+print(f"-----Train: {len(ds_train_bh)} samples of total size {sys.getsizeof(ds_train_bh)/1000} MB")
+print(f"-----Validation: {len(ds_val_bh)} samples of total size {sys.getsizeof(ds_val_bh)/1000} MB")
+print(f"-----Test: {len(ds_test_bh)} samples of total size {sys.getsizeof(ds_test_bh)/1000} MB")
+print("Skagen:")
+print(f"-----Train: {len(ds_train_sk)} samples of total size {sys.getsizeof(ds_train_sk)/1000} MB")
+print(f"-----Validation: {len(ds_val_sk)} samples of total size {sys.getsizeof(ds_val_sk)/1000} MB")
+print(f"-----Test: {len(ds_test_sk)} samples of total size {sys.getsizeof(ds_test_sk)/1000} MB")
+print("Baelterne:")
+print(f"-----Train: {len(ds_train_blt)} samples of total size {sys.getsizeof(ds_train_blt)/1000} MB")
+print(f"-----Validation: {len(ds_val_blt)} samples of total size {sys.getsizeof(ds_val_blt)/1000} MB")
+print(f"-----Test: {len(ds_test_blt)} samples of total size {sys.getsizeof(ds_test_blt)/1000} MB")
+
 
 if save_data:
     print("Saving data...")
-    with open(path + "data/train"+name+".pcl", "wb") as f:
-        pickle.dump(ds_train, f)
-    with open(path + "data/val"+name+".pcl", "wb") as f:
-        pickle.dump(ds_val, f)
-    with open(path + "data/test"+name+".pcl", "wb") as f:
-        pickle.dump(ds_test, f)
+    with open(path + "data/train_bh_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_train_bh, f)
+    with open(path + "data/train_sk_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_train_sk, f)
+    with open(path + "data/train_blt_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_train_blt, f)
+
+    with open(path + "data/val_bh_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_val_bh, f)
+    with open(path + "data/val_sk_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_val_sk, f)
+    with open(path + "data/val_blt_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_val_blt, f)
+
+    with open(path + "data/test_bh_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_test_bh, f)
+    with open(path + "data/test_sk_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_test_sk, f)
+    with open(path + "data/test_blt_"+name+".pcl", "wb") as f:
+        pickle.dump(ds_test_blt, f)
+
     with open(path + "data/stats"+name+".pcl", "wb") as f:
         pickle.dump(stat, f)
     print("Done!")

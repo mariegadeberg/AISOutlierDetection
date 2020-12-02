@@ -19,6 +19,7 @@ parser.add_argument("--save_dir", type=str, default="./models/", help="Directory
 parser.add_argument("--print_every", type=int, default=1, help="Determines how often it print to terminal. Default every 10th epoch")
 parser.add_argument("--train", type=str, default="train.pcl", help="What training data should be used")
 parser.add_argument("--val", type=str, default="val.pcl", help="What training data should be used")
+parser.add_argument("--ROI", type=str, default="blt", help="Specify the region of interest")
 
 args = parser.parse_args()
 
@@ -29,15 +30,17 @@ save_dir = args.save_dir
 print_every = args.print_every
 train_ = args.train
 val_ = args.val
+ROI = args.ROI
 
-input_shape = Config.input_shape
+input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
+lr = Config.lr
 
 # Setup for training
 writer = SummaryWriter()
 
 model = VRNN(input_shape, latent_shape, beta)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 epoch = 0
 

@@ -24,8 +24,8 @@ class Preprocess:
         self.long_min = Config.long_min
         self.long_max = Config.long_max
 
-        self.ROI_boundary_E = Config.ROI_boundary_E
-        self.ROI_boundary_W = Config.ROI_boundary_W
+        self.ROI_boundary_long = Config.ROI_boundary_long
+        self.ROI_boundary_lat = Config.ROI_boundary_lat
 
         self.max_knot = Config.max_knot
         self.sog_res = Config.sog_res
@@ -70,11 +70,11 @@ class Preprocess:
         df = pd.DataFrame(path, columns=["Time", "Latitude", "Longitude", "SOG", "COG", "Header"])
 
         out_east = np.array([1 if val / 600000 < self.long_min else 0 for val in df.Longitude])
-        eastern_ROI = np.array([1 if val / 600000 < self.ROI_boundary_E else 0 for val in df.Longitude])
-        western_ROI = np.array([1 if val / 600000 > self.ROI_boundary_W else 0 for val in df.Longitude])
+        long_ROI = np.array([1 if val / 600000 < self.ROI_boundary_long else 0 for val in df.Longitude])
+        lat_ROI = np.array([1 if val / 600000 < self.ROI_boundary_lat else 0 for val in df.Latitude])
 
-        breaks = np.concatenate((np.where(western_ROI[:-1] != western_ROI[1:])[0] + 1,
-                                 np.where(eastern_ROI[:-1] != eastern_ROI[1:])[0] + 1,
+        breaks = np.concatenate((np.where(long_ROI[:-1] != long_ROI[1:])[0] + 1,
+                                 np.where(lat_ROI[:-1] != lat_ROI[1:])[0] + 1,
                                  np.where(out_east[:-1] != out_east[1:])[0] + 1), axis=0)
 
         subpaths = np.array_split(df, np.sort(breaks))
@@ -103,7 +103,7 @@ class Preprocess:
 
         return dummies
 
-    def four_hot_encode(self, path):
+    def four_hot_encode(self, path, ROI):
         sog = self.create_bins(path["SOG"], self.sog_res, scaling_factor=10, upperbound=self.max_knot)
         sog = self.one_hot_and_fill(sog, self.sog_columns)
 
@@ -112,22 +112,40 @@ class Preprocess:
 
         lat = self.create_bins(path["Latitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.lat_max,
                           lowerbound=self.lat_min, kind="coordinate")
-        lat = self.one_hot_and_fill(lat, cols = pd.Float64Index(np.round(self.lat_columns, 2)))
+        lat = self.one_hot_and_fill(lat, cols = pd.Float64Index(np.round(self.lat_columns[ROI], 2)))
 
         long = self.create_bins(path["Longitude"], self.lat_long_res, scaling_factor=600000, upperbound=self.long_max,
                            lowerbound=self.long_min, kind="coordinate")
-        long = self.one_hot_and_fill(long, cols = pd.Float64Index(np.round(self.long_columns, 2)))
+        long = self.one_hot_and_fill(long, cols = pd.Float64Index(np.round(self.long_columns[ROI], 2)))
 
         data = sparse.csr_matrix(np.concatenate((lat, long, sog, cog), axis=1))
 
         return data
 
+    def prepare_output(self, js, subsubpath, ROI):
+        js1 = js.copy()
+        df = subsubpath.copy()
+        df["Time"] = df["Time"].astype(str)
+        js1["path"] = df.to_dict("list")
+        js1["FourHot"] = self.four_hot_encode(js1["path"], ROI)
+
+        return js1
+
     def split_and_collect_trajectories(self, files, month, category):
         print(f"Processing files from month: {month}")
         print(f"===> of type: {category}")
-        data_train = []
-        data_val = []
-        data_test = []
+        data_train_bh = []
+        data_val_bh = []
+        data_test_bh = []
+
+        data_train_sk = []
+        data_val_sk = []
+        data_test_sk = []
+
+        data_train_blt = []
+        data_val_blt = []
+        data_test_blt = []
+
         disc_short = 0
         disc_ROI = 0
         disc_moored = 0
@@ -161,18 +179,13 @@ class Preprocess:
                         disc_ROI += 1
                         continue
 
-                    if any(subpath.Longitude > self.ROI_boundary_W * 600000):
+                    if any(subpath.Longitude > self.long_max * 600000):
                         disc_ROI += 1
                         continue
 
                     if len(subpath) < self.threshold_trajlen:
                         disc_short += 1
                         continue
-
-                    if all(subpath.Longitude < self.ROI_boundary_E * 600000):
-                        eastern = 1
-                    else:
-                        eastern = 0
 
                     # Resampling and interpolating
                     df = self.resample_interpolate(subpath)
@@ -194,30 +207,61 @@ class Preprocess:
                         if moored:
                             disc_moored += 1
                             continue
-                        else:
-                            js1 = js.copy()
-                            df1 = subsubpath.copy()
-                            df1["Time"] = df1["Time"].astype(str)
-                            js1["path"] = df1.to_dict("list")
-                            js1["eastern"] = eastern
-                            js1["FourHot"] = self.four_hot_encode(js1["path"])
-                            if all(subsubpath["Time"] < self.train_cuttime):
-                                data_train.append(js1)
-                            elif all(subsubpath["Time"] < self.val_cuttime):
-                                data_val.append(js1)
-                            else:
-                                data_test.append(js1)
 
+                        # Splitting based on region
+                        if all(subsubpath["Longitude"] > self.ROI_boundary_long * 600000):
+                            js1 = self.prepare_output(js, subsubpath, ROI="bh")
+                            if all(subsubpath["Time"] < self.train_cuttime):
+                                data_train_bh.append(js1)
+                            elif all(subsubpath["Time"] < self.val_cuttime):
+                                data_val_bh.append(js1)
+                            else:
+                                data_test_bh.append(js1)
+                        elif all(subsubpath["Latitude"] > self.ROI_boundary_lat * 600000):
+                            js1 = self.prepare_output(js, subsubpath, ROI="sk")
+                            if all(subsubpath["Time"] < self.train_cuttime):
+                                data_train_sk.append(js1)
+                            elif all(subsubpath["Time"] < self.val_cuttime):
+                                data_val_sk.append(js1)
+                            else:
+                                data_test_sk.append(js1)
+                        else:
+                            js1 = self.prepare_output(js, subsubpath, ROI="blt")
+                            if all(subsubpath["Time"] < self.train_cuttime):
+                                data_train_blt.append(js1)
+                            elif all(subsubpath["Time"] < self.val_cuttime):
+                                data_val_blt.append(js1)
+                            else:
+                                data_test_blt.append(js1)
 
         stats = {"disc_short": disc_short,
                  "disc_ROI": disc_ROI,
                  "disc_moored": disc_moored,
                  "disc_dur_min": disc_dur_min,
-                 "train_no": len(data_train),
-                 "val_no": len(data_val),
-                 "test_no": len(data_test)}
+                 "train_no_bh": len(data_train_bh),
+                 "val_no_bh": len(data_val_bh),
+                 "test_no_bh": len(data_test_bh),
+                 "train_no_sk": len(data_train_sk),
+                 "val_no_sk": len(data_val_sk),
+                 "test_no_sk": len(data_test_sk),
+                 "train_no_blt": len(data_train_blt),
+                 "val_no_blt": len(data_val_blt),
+                 "test_no_blt": len(data_test_blt)
+                 }
 
-        return data_train, data_val, data_test, stats
+        train = {"bh": data_train_bh,
+                 "sk": data_train_sk,
+                 "blt": data_train_blt}
+
+        val = {"bh": data_val_bh,
+                "sk": data_val_sk,
+                "blt": data_val_blt}
+
+        test = {"bh": data_test_bh,
+                "sk": data_test_sk,
+                "blt": data_test_blt}
+
+        return train, val, test, stats
 
 
 class AISDataset(torch.utils.data.Dataset):

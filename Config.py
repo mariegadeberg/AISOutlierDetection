@@ -17,13 +17,13 @@ class Config(object):
 
 
     ## Defining Region of Interest
-    lat_min = 53
-    lat_max = 58
-    long_min = 4
-    long_max = 8.5
+    lat_min = 54.5
+    lat_max = 58.5
+    long_min = 9
+    long_max = 17
 
-    ROI_boundary_E = 9.5
-    ROI_boundary_W = 13
+    ROI_boundary_long = 13
+    ROI_boundary_lat = 56.5
 
     ## Set the maximum interval between AIS messages before splitting trajectory
     max_interval = 60 * 60 * 4
@@ -34,7 +34,7 @@ class Config(object):
     ## Set thresholds for durations
     threshold_trajlen = 20
     threshold_dur_min = 4*60*60
-    threshold_dur_max = 6*60*60
+    threshold_dur_max = 24*60*60
 
 
     ## Time in seconds from epoch to T0 of dataset
@@ -50,12 +50,23 @@ class Config(object):
     cog_columns = range(0, 365, cog_res)
 
     lat_long_res = 0.01
-    lat_columns = np.arange(lat_min, lat_max + lat_long_res, lat_long_res)
-    long_columns = np.arange(long_min, long_max + lat_long_res, lat_long_res)
 
-    total_bins = len(sog_columns) + len(cog_columns) + len(lat_columns) + len(long_columns)
+    lat_columns = {"bh": np.arange(lat_min, ROI_boundary_lat + lat_long_res, lat_long_res),
+                   "sk": np.arange(ROI_boundary_lat, lat_max + lat_long_res, lat_long_res),
+                   "blt": np.arange(lat_min, ROI_boundary_lat + lat_long_res, lat_long_res)}
+
+    long_columns = {"bh": np.arange(ROI_boundary_long, long_max + lat_long_res, lat_long_res),
+                    "sk": np.arange(long_min, ROI_boundary_long + lat_long_res, lat_long_res),
+                    "blt": np.arange(long_min, ROI_boundary_long + lat_long_res, lat_long_res)}
+
+
+    #total_bins = len(sog_columns) + len(cog_columns) + len(lat_columns) + len(long_columns)
 
     # -------------------- Used during training ----------------------#
 
-    input_shape = total_bins
+    input_shape = {"bh": len(sog_columns) + len(cog_columns) + len(lat_columns["bh"]) + len(long_columns["bh"]),
+                   "sk": len(sog_columns) + len(cog_columns) + len(lat_columns["sk"]) + len(long_columns["sk"]),
+                   "blt": len(sog_columns) + len(cog_columns) + len(lat_columns["blt"]) + len(long_columns["blt"])}
     latent_shape = 100
+
+    lr = 0.0003
