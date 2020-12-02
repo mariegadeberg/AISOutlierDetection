@@ -7,7 +7,6 @@ from utils_preprocess import PadCollate
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 import pickle
-
 # Setting arguments
 
 parser = argparse.ArgumentParser()
