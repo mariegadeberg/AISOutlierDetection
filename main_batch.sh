@@ -42,4 +42,4 @@
 #module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train.py --num_epoch 100 --train "train_small.pcl" --val "val_small.pcl"
+python AISOutlierDetection/train.py --num_epoch 10 --train "train_blt_.pcl" --val "val_blt_.pcl"
