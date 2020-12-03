@@ -72,10 +72,12 @@ class Preprocess:
         out_east = np.array([1 if val / 600000 < self.long_min else 0 for val in df.Longitude])
         long_ROI = np.array([1 if val / 600000 < self.ROI_boundary_long else 0 for val in df.Longitude])
         lat_ROI = np.array([1 if val / 600000 < self.ROI_boundary_lat else 0 for val in df.Latitude])
+        out_south = np.array([1 if val / 600000 < self.lat_min else 0 for val in df.Latitude])
 
         breaks = np.concatenate((np.where(long_ROI[:-1] != long_ROI[1:])[0] + 1,
                                  np.where(lat_ROI[:-1] != lat_ROI[1:])[0] + 1,
-                                 np.where(out_east[:-1] != out_east[1:])[0] + 1), axis=0)
+                                 np.where(out_east[:-1] != out_east[1:])[0] + 1,
+                                 np.where(out_south[:-1] != out_south[1:0])[0] + 1), axis=0)
 
         subpaths = np.array_split(df, np.sort(breaks))
 
@@ -180,6 +182,10 @@ class Preprocess:
                         continue
 
                     if any(subpath.Longitude > self.long_max * 600000):
+                        disc_ROI += 1
+                        continue
+
+                    if any(subpath.Latitude < self.lat_min * 600000):
                         disc_ROI += 1
                         continue
 

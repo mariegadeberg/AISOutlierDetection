@@ -56,6 +56,14 @@ val_loader = torch.utils.data.DataLoader(val_ds, batch_size=1, shuffle=True)
 model = model.to(device)
 training_loss = []
 val_loss = []
+
+training_kl = []
+training_logpx = []
+
+diagnostics_list = []
+
+train_file = open(save_dir+f"training_loss_{num_epoch}e{ROI}data.txt", "w")
+val_file = open(save_dir+f"val_loss_{num_epoch}e{ROI}data.txt", "w")
 print(f"Training initialized...")
 while epoch < num_epoch:
     print(f"--> Training started for epoch {epoch}")
@@ -83,8 +91,10 @@ while epoch < num_epoch:
         loss.backward()
         optimizer.step()
 
-        #epoch_train_kl += torch.mean(torch.stack(diagnostics["kl"]))
-        #epoch_train_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
+        diagnostics_list.append(diagnostics)
+
+        epoch_train_kl += np.mean(diagnostics["kl"])
+        epoch_train_logpx += np.mean(diagnostics["log_px"])
 
         epoch_train_loss += loss.item()
 
@@ -93,8 +103,8 @@ while epoch < num_epoch:
     print(f"--> Validation started for epoch {epoch}")
 
     writer.add_scalar("Loss/train", epoch_train_loss, epoch)
-    #writer.add_scalar("KL/train", epoch_train_kl, epoch)
-    #writer.add_scalar("Log_px/train", epoch_train_logpx, epoch)
+    writer.add_scalar("KL/train", epoch_train_kl, epoch)
+    writer.add_scalar("Log_px/train", epoch_train_logpx, epoch)
 
     model.eval()
 
@@ -104,16 +114,15 @@ while epoch < num_epoch:
 
             loss, diagnostics = model(inputs)
 
-            #epoch_val_kl += torch.mean(torch.stack(diagnostics["kl"]))
-            #epoch_val_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
+            epoch_val_kl += np.mean(diagnostics["kl"])
+            epoch_val_logpx += np.mean(diagnostics["log_px"])
 
             epoch_val_loss += loss.item()
 
-
-        #print("Validation done")
+        print("Validation done")
         writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
-        #writer.add_scalar("KL/validation", epoch_val_kl, epoch)
-        #writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
+        writer.add_scalar("KL/validation", epoch_val_kl, epoch)
+        writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
 
     training_loss.append(epoch_train_loss/len(train_loader))
     val_loss.append(epoch_val_loss/len(val_loader))
@@ -121,9 +130,20 @@ while epoch < num_epoch:
     if epoch % print_every == 0:
         print(f'Epoch {epoch}, training loss: {training_loss[-1]:.4f}, validation loss: {val_loss[-1]:.4f}')
 
+
+    train_file.write(str(training_loss[-1]) + "\n")
+    train_file.flush()
+
+    val_file.write(str(val_loss[-1]) + "\n")
+    val_file.flush()
+
+    writer.flush()
+
     epoch += 1
 
-writer.flush()
+train_file.close()
+val_file.close()
+
 writer.close()
 
 torch.save(model.state_dict(), save_dir+f"vrnn_{num_epoch}_epochs.pt")
@@ -133,5 +153,8 @@ with open(save_dir+f"training_loss_{num_epoch}_epochs.txt", "wb") as fp:
 
 with open(save_dir+f"validation_loss_{num_epoch}_epochs.txt", "wb") as fp:
     pickle.dump(val_loss, fp)
+
+with open(save_dir+f"diagnostics_{num_epoch}e_{ROI}data.pcl", "wb") as fp:
+    pickle.dump(diagnostics_list, fp)
 
 
