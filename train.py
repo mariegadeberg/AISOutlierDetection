@@ -93,8 +93,8 @@ while epoch < num_epoch:
 
         diagnostics_list.append(diagnostics)
 
-        epoch_train_kl += np.mean(diagnostics["kl"])
-        epoch_train_logpx += np.mean(diagnostics["log_px"])
+        epoch_train_kl += torch.mean(torch.stack(diagnostics["kl"]))
+        epoch_train_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
 
         epoch_train_loss += loss.item()
 
@@ -114,8 +114,8 @@ while epoch < num_epoch:
 
             loss, diagnostics = model(inputs)
 
-            epoch_val_kl += np.mean(diagnostics["kl"])
-            epoch_val_logpx += np.mean(diagnostics["log_px"])
+            epoch_val_kl += torch.mean(torch.stack(diagnostics["kl"]))
+            epoch_val_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
 
             epoch_val_loss += loss.item()
 
