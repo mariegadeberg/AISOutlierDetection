@@ -55,11 +55,6 @@ val_loader = torch.utils.data.DataLoader(val_ds, batch_size=1, shuffle=True)
 
 # move the model to the device
 model = model.to(device)
-#training_loss = []
-#val_loss = []
-
-training_kl = []
-training_logpx = []
 
 diagnostics_list = []
 
