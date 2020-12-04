@@ -58,7 +58,7 @@ model = model.to(device)
 
 diagnostics_list = []
 
-with open(save_dir+f"training_loss_{num_epoch}{ROI}.txt", "w") as output_file:
+with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
@@ -151,7 +151,7 @@ with open(save_dir+f"training_loss_{num_epoch}{ROI}.txt", "w") as output_file:
 
 writer.close()
 
-torch.save(model.state_dict(), save_dir+f"vrnn_{num_epoch}_epochs.pt")
+torch.save(model.state_dict(), save_dir+f"vrnn_{ROI}{num_epoch}_epochs.pt")
 
 with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(diagnostics_list, fp)
