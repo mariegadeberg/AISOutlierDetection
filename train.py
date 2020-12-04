@@ -7,6 +7,7 @@ from utils_preprocess import PadCollate
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 import pickle
+import csv
 # Setting arguments
 
 parser = argparse.ArgumentParser()
@@ -54,107 +55,110 @@ val_loader = torch.utils.data.DataLoader(val_ds, batch_size=1, shuffle=True)
 
 # move the model to the device
 model = model.to(device)
-training_loss = []
-val_loss = []
+#training_loss = []
+#val_loss = []
 
 training_kl = []
 training_logpx = []
 
 diagnostics_list = []
 
-train_file = open(save_dir+f"training_loss_{num_epoch}e{ROI}data.txt", "w")
-val_file = open(save_dir+f"val_loss_{num_epoch}e{ROI}data.txt", "w")
-print(f"Training initialized...")
-while epoch < num_epoch:
-    print(f"--> Training started for epoch {epoch}")
-    epoch_train_loss = 0
-    epoch_val_loss = 0
+with open(save_dir+f"training_loss_{num_epoch}{ROI}.txt", "w") as output_file:
+    header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]
+    csv_writer = csv.DictWriter(output_file, fieldnames=header)
+    csv_writer.writeheader()
 
-    epoch_train_kl = 0
-    epoch_val_kl = 0
+    print(f"Training initialized...")
+    while epoch < num_epoch:
+        print(f"--> Training started for epoch {epoch}")
+        epoch_train_loss = 0
+        epoch_val_loss = 0
 
-    epoch_train_logpx = 0
-    epoch_val_logpx = 0
+        epoch_train_kl = 0
+        epoch_val_kl = 0
 
-    model.train()
-    i = 0
-    for inputs in train_loader:
+        epoch_train_logpx = 0
+        epoch_val_logpx = 0
 
-        inputs = inputs.to(device)
+        model.train()
+        i = 0
+        for inputs in train_loader:
 
-        if i % 1000 == 0:
-            print(f"     passing input {i}/{len(train_loader)}")
-
-        loss, diagnostics = model(inputs)
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        diagnostics_list.append(diagnostics)
-
-        epoch_train_kl += torch.mean(torch.stack(diagnostics["kl"]))
-        epoch_train_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
-
-        epoch_train_loss += loss.item()
-
-        i += 1
-
-    print(f"--> Validation started for epoch {epoch}")
-
-    writer.add_scalar("Loss/train", epoch_train_loss, epoch)
-    writer.add_scalar("KL/train", epoch_train_kl, epoch)
-    writer.add_scalar("Log_px/train", epoch_train_logpx, epoch)
-
-    model.eval()
-
-    with torch.no_grad():
-        for inputs in val_loader:
             inputs = inputs.to(device)
+
+            if i % 1000 == 0:
+                print(f"     passing input {i}/{len(train_loader)}")
 
             loss, diagnostics = model(inputs)
 
-            epoch_val_kl += torch.mean(torch.stack(diagnostics["kl"]))
-            epoch_val_logpx += torch.mean(torch.stack(diagnostics["log_px"]))
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-            epoch_val_loss += loss.item()
+            if i % 1000 == 0:
+                diagnostics_list.append(diagnostics)
 
-        print("Validation done")
-        writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
-        writer.add_scalar("KL/validation", epoch_val_kl, epoch)
-        writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
+            epoch_train_kl += np.mean(diagnostics["kl"])
+            epoch_train_logpx += np.mean(diagnostics["log_px"])
 
-    training_loss.append(epoch_train_loss/len(train_loader))
-    val_loss.append(epoch_val_loss/len(val_loader))
+            epoch_train_loss += loss.item()
 
-    if epoch % print_every == 0:
-        print(f'Epoch {epoch}, training loss: {training_loss[-1]:.4f}, validation loss: {val_loss[-1]:.4f}')
+            i += 1
 
+        print(f"--> Validation started for epoch {epoch}")
 
-    train_file.write(str(training_loss[-1]) + "\n")
-    train_file.flush()
+        writer.add_scalar("Loss/train", epoch_train_loss, epoch)
+        writer.add_scalar("KL/train", epoch_train_kl, epoch)
+        writer.add_scalar("Log_px/train", epoch_train_logpx, epoch)
 
-    val_file.write(str(val_loss[-1]) + "\n")
-    val_file.flush()
+        model.eval()
 
-    writer.flush()
+        with torch.no_grad():
+            for inputs in val_loader:
+                inputs = inputs.to(device)
 
-    epoch += 1
+                loss, diagnostics = model(inputs)
 
-train_file.close()
-val_file.close()
+                epoch_val_kl += np.mean(diagnostics["kl"])
+                epoch_val_logpx += np.mean(diagnostics["log_px"])
+
+                epoch_val_loss += loss.item()
+
+            print("Validation done")
+            writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
+            writer.add_scalar("KL/validation", epoch_val_kl, epoch)
+            writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
+
+        #Prepare output
+        training_loss = epoch_train_loss/len(train_loader)
+        val_loss = epoch_val_loss/len(val_loader)
+
+        training_kl = epoch_train_kl/len(train_loader)
+        val_kl = epoch_val_kl/len(val_loader)
+
+        training_logpx = epoch_train_logpx/len(train_loader)
+        val_logpx = epoch_val_logpx/len(train_loader)
+
+        if epoch % print_every == 0:
+            print(f'Epoch {epoch}, training loss: {training_loss:.4f}, validation loss: {val_loss:.4f}')
+
+        csv_writer.writerow({"training_loss": training_loss,
+                             "validation_loss": val_loss,
+                             "training_kl": training_kl,
+                             "validation_kl": val_kl,
+                             "training_logpx": training_logpx,
+                             "validation_logpx": val_logpx})
+
+        output_file.flush()
+        writer.flush()
+
+        epoch += 1
 
 writer.close()
 
 torch.save(model.state_dict(), save_dir+f"vrnn_{num_epoch}_epochs.pt")
 
-with open(save_dir+f"training_loss_{num_epoch}_epochs.txt", "wb") as fp:
-    pickle.dump(training_loss, fp)
-
-with open(save_dir+f"validation_loss_{num_epoch}_epochs.txt", "wb") as fp:
-    pickle.dump(val_loss, fp)
-
-with open(save_dir+f"diagnostics_{num_epoch}e_{ROI}data.pcl", "wb") as fp:
+with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(diagnostics_list, fp)
 
 

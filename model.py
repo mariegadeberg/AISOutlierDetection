@@ -112,7 +112,9 @@ class VRNN(nn.Module):
             log_px_list.append(log_px)
 
         with torch.no_grad():
-            diagnostics = {'loss_list': loss_list, 'log_px': log_px_list, 'kl': kl_list}
+            diagnostics = {'loss_list': torch.stack(loss_list).numpy(),
+                           'log_px': torch.stack(log_px_list).numpy(),
+                           'kl': torch.stack(kl_list).numpy()}
 
         return acc_loss, diagnostics
 
