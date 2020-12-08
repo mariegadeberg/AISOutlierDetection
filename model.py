@@ -32,7 +32,7 @@ class VRNN(nn.Module):
                                      nn.ReLU())
 
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),
-                                     nn.ReLU())
+                                     nn.PReLU())
 
         self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape)
 
@@ -71,6 +71,8 @@ class VRNN(nn.Module):
         loss_list = []
         kl_list = []
         log_px_list = []
+
+        z_out = 0
 
         for x in inputs[0]:
 
@@ -116,7 +118,7 @@ class VRNN(nn.Module):
                            'log_px': torch.stack(log_px_list).cpu().numpy(),
                            'kl': torch.stack(kl_list).cpu().numpy()}
 
-        return acc_loss, diagnostics
+        return acc_loss/len(inputs[0]), diagnostics
 
 
 class ReparameterizedDiagonalGaussian(Distribution):
