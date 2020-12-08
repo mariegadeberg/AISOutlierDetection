@@ -71,6 +71,7 @@ class VRNN(nn.Module):
         loss_list = []
         kl_list = []
         log_px_list = []
+        h_out = []
 
         z_out = 0
 
@@ -99,6 +100,8 @@ class VRNN(nn.Module):
             #rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
 
+            h_out.append(out[-1][-1].mean())
+
             #Calulating loss
             log_px = px.log_prob(x).sum()
             log_pz = pz.log_prob(z).sum()
@@ -116,7 +119,8 @@ class VRNN(nn.Module):
         with torch.no_grad():
             diagnostics = {'loss_list': torch.stack(loss_list).cpu().numpy(),
                            'log_px': torch.stack(log_px_list).cpu().numpy(),
-                           'kl': torch.stack(kl_list).cpu().numpy()}
+                           'kl': torch.stack(kl_list).cpu().numpy(),
+                           'h': torch.stack(h_out).cpu().numpy()}
 
         return acc_loss/len(inputs[0]), diagnostics
 
