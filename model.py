@@ -33,7 +33,7 @@ class VRNN(nn.Module):
                                      nn.ReLU())
 
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),
-                                     nn.PReLU())
+                                     nn.ReLU())
 
         self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape, batch_first=True)
 
