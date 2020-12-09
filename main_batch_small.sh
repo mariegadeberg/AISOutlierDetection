@@ -45,6 +45,6 @@
 python AISOutlierDetection/train.py \
      --num_epoch 100 \
      --train "train_bh_small.pcl" \
-     --val "val_bh_.pcl" \
+     --val "val_bh_small.pcl" \
      --ROI "bh" \
      --batchsize 32
