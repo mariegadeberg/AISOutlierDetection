@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh_small50epoch/output_50bh.txt")
-results2 = pd.read_csv("../HPCoutputs/models/bh15epoch/output_15bh.txt")
+results = pd.read_csv("/Volumes/MNG/models/output_10bh.txt")
+
 
 
 plt.figure()

@@ -29,6 +29,7 @@ class VRNN(nn.Module):
                                    nn.ReLU())
 
         self.encoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, 2*self.latent_shape),
+                                     nn.BatchNorm1d(2*self.latent_shape),
                                      nn.ReLU())
 
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),
@@ -46,9 +47,10 @@ class VRNN(nn.Module):
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def posterior(self, hidden, x):
-        encoder_input = torch.cat([hidden, x], dim=2)
+        encoder_input = torch.cat([hidden, x], dim=2).squeeze()
         hidden = self.encoder(encoder_input)
         #hidden = self.encoder(torch.cat([hidden, x]))
+        hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 

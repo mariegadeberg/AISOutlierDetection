@@ -395,15 +395,7 @@ class TruncCollate:
 def get_mean(ROI, Config):
 
     with open("/Volumes/MNG/data/train_"+ROI+"_.pcl", "rb") as f:
-        train = pickle.load(f)
-
-    with open("/Volumes/MNG/data/val_"+ROI+"_.pcl", "rb") as f:
-        val = pickle.load(f)
-
-    with open("/Volumes/MNG/data/test_"+ROI+"_.pcl", "rb") as f:
-        test = pickle.load(f)
-
-    dataset = train + val + test
+        dataset = pickle.load(f)
 
     sum_all = np.zeros((1,Config.input_shape[ROI]))
 
@@ -419,6 +411,6 @@ def get_mean(ROI, Config):
         pickle.dump(mean_all, f)
 
 #ROIs = ["bh", "blt", "sk"]
-#
+
 #for ROI in ROIs:
 #    get_mean(ROI, Config)
