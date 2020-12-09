@@ -29,7 +29,6 @@ class VRNN(nn.Module):
                                    nn.ReLU())
 
         self.encoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, 2*self.latent_shape),
-                                     nn.BatchNorm1d(1),
                                      nn.ReLU())
 
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),

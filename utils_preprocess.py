@@ -271,17 +271,22 @@ class Preprocess:
 
 
 class AISDataset(torch.utils.data.Dataset):
-    def __init__(self, path):
+    def __init__(self, path, mean_path):
         self.path = path
+        self.mean_path = mean_path
 
         with open(self.path, "rb") as f:
             self.dataset = pickle.load(f)
+
+        with open(self.mean_path, "rb") as f:
+            self.mean = pickle.load(f)
 
     def __len__(self):
         return(len(self.dataset))
 
     def __getitem__(self, idx):
-        return torch.tensor(self.dataset[idx]["FourHot"].todense(), dtype=torch.float)
+        item = self.dataset[idx]["FourHot"].todense() - self.mean
+        return torch.tensor(item, dtype=torch.float)
 
 
 def pad_tensor(vec, pad, dim):
@@ -386,3 +391,34 @@ class TruncCollate:
 
     def __call__(self, batch):
         return self.trunc_collate(batch)
+
+def get_mean(ROI, Config):
+
+    with open("/Volumes/MNG/data/train_"+ROI+"_.pcl", "rb") as f:
+        train = pickle.load(f)
+
+    with open("/Volumes/MNG/data/val_"+ROI+"_.pcl", "rb") as f:
+        val = pickle.load(f)
+
+    with open("/Volumes/MNG/data/test_"+ROI+"_.pcl", "rb") as f:
+        test = pickle.load(f)
+
+    dataset = train + val + test
+
+    sum_all = np.zeros((1,Config.input_shape[ROI]))
+
+    total_ais_msg = 0
+
+    for path in dataset:
+        sum_all += path["FourHot"].todense().sum(axis=0)
+        total_ais_msg += len(path)
+
+    mean_all = sum_all / total_ais_msg
+
+    with open("/Volumes/MNG/data/mean_"+ROI+".pcl", "wb") as f:
+        pickle.dump(mean_all, f)
+
+#ROIs = ["bh", "blt", "sk"]
+#
+#for ROI in ROIs:
+#    get_mean(ROI, Config)
