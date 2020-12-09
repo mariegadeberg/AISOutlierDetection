@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from utils_preprocess import AISDataset
 from Config import *
-from utils_preprocess import PadCollate
+from utils_preprocess import TruncCollate
 from utils_train import *
 import argparse
 from torch.utils.tensorboard import SummaryWriter
@@ -22,6 +22,7 @@ parser.add_argument("--print_every", type=int, default=1, help="Determines how o
 parser.add_argument("--train", type=str, default="train.pcl", help="What training data should be used")
 parser.add_argument("--val", type=str, default="val.pcl", help="What training data should be used")
 parser.add_argument("--ROI", type=str, default="blt", help="Specify the region of interest")
+parser.add_argument("--batchsize", type=int, default=1)
 
 args = parser.parse_args()
 
@@ -33,6 +34,7 @@ print_every = args.print_every
 train_ = args.train
 val_ = args.val
 ROI = args.ROI
+batchsize = args.batchsize
 
 input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
@@ -50,10 +52,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
 train_ds = AISDataset(path+train_)
-train_loader = torch.utils.data.DataLoader(train_ds, batch_size=1, shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
 val_ds = AISDataset(path+val_)
-val_loader = torch.utils.data.DataLoader(val_ds, batch_size=1, shuffle=True)
+val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
 # move the model to the device
 model = model.to(device)
@@ -176,8 +178,9 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 #    legend.append([name])
 #plt.title("Average of gradients through small dataset")
 #plt.legend(legend)
+#plt.ylim(0, 1)
 #plt.savefig(save_dir+"/gradient_flow.png")
-#
+##
 #plt.figure()
 #plt.plot(loss_plot)
 #plt.title("Training loss through small training set")

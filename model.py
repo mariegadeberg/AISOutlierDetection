@@ -29,12 +29,13 @@ class VRNN(nn.Module):
                                    nn.ReLU())
 
         self.encoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, 2*self.latent_shape),
+                                     nn.BatchNorm1d(1),
                                      nn.ReLU())
 
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),
                                      nn.PReLU())
 
-        self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape)
+        self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape, batch_first=True)
 
         self.register_buffer('out', torch.zeros(1, 1, self.latent_shape))
         self.register_buffer('h', torch.zeros(1, 1, self.latent_shape))
@@ -46,26 +47,27 @@ class VRNN(nn.Module):
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def posterior(self, hidden, x):
-        #hidden = self.encoder(torch.cat([hidden, x], dim=1))
-        hidden = self.encoder(torch.cat([hidden, x]))
+        encoder_input = torch.cat([hidden, x], dim=2)
+        hidden = self.encoder(encoder_input)
+        #hidden = self.encoder(torch.cat([hidden, x]))
         mu, log_sigma = hidden.chunk(2, dim=-1)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
-        px_logits = self.decoder(torch.cat([z_enc, h]))
+        px_logits = self.decoder(torch.cat([z_enc, h], dim=2))
         return Bernoulli(logits=px_logits)
 
     def forward(self, inputs):
 
-        #self.batch_size = inputs.size(0)
+        batch_size = inputs.size(0)
 
         #out = torch.zeros(1, 1, self.latent_shape)
         #h = torch.zeros(1, 1, self.latent_shape)
         #c = torch.zeros(1, 1, self.latent_shape)
 
-        out = self.out
-        h = self.h
-        c = self.c
+        out = self.out.expand(batch_size, *self.out.shape[1:])
+        h = self.h.expand(1, batch_size, self.h.shape[-1])
+        c = self.c.expand(1, batch_size, self.c.shape[-1])
 
         acc_loss = 0
         loss_list = []
@@ -75,37 +77,37 @@ class VRNN(nn.Module):
 
         z_out = 0
 
-        for x in inputs[0]:
+        #for x in inputs:
+        for t in range(inputs.size(1)):
+            x = inputs[:, t, :].unsqueeze(1)
 
             #Embed input
             x_hat = self.phi_x(x)
-
             #Create prior distribution
-            pz = self._prior(out[-1][-1])
+            pz = self._prior(out)
 
             #Create approximate posterior
-            qz = self.posterior(out[-1][-1], x_hat)
+            qz = self.posterior(out, x_hat)
 
             #Sample and embed z from posterior
             z = qz.rsample()
             z_hat = self.phi_z(z)
 
             #Decode z_hat
-            px = self.generative(z_hat, out[-1][-1])
+            px = self.generative(z_hat, out)
 
             #Update h form LSTM
             #rnn_input = torch.cat([x_hat, z_hat], dim=1)
-            rnn_input = torch.cat([x_hat, z_hat])
-            rnn_input = rnn_input.view(1, 1, rnn_input.size(0))
+            rnn_input = torch.cat([x_hat, z_hat], dim=2)
             #rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
 
-            h_out.append(out[-1][-1].mean())
+            h_out.append(out.mean(axis=2))
 
             #Calulating loss
-            log_px = px.log_prob(x).sum()
-            log_pz = pz.log_prob(z).sum()
-            log_qz = qz.log_prob(z).sum()
+            log_px = px.log_prob(x).sum(axis=2)
+            log_pz = pz.log_prob(z).sum(axis=2)
+            log_qz = qz.log_prob(z).sum(axis=2)
 
             kl = log_qz - log_pz
             elbo_beta = log_px - self.beta * kl

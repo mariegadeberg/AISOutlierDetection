@@ -336,3 +336,53 @@ class PadCollate:
 
     def __call__(self, batch):
         return self.pad_collate(batch)
+
+def trunc_tensor(vec, trunc):
+    """
+    args:
+        vec - tensor to pad
+        pad - the size to pad to
+        dim - dimension to pad
+
+    return:
+        a new tensor trauncated to 'trunc' in dimension 'dim'
+    """
+
+    return vec[0:trunc]
+
+class TruncCollate:
+    """
+    a variant of callate_fn that pads according to the longest sequence in
+    a batch of sequences
+    """
+
+    def __init__(self, dim=0):
+        """
+        args:
+            dim - the dimension to be truncated (dimension of time in sequences)
+        """
+        self.dim = dim
+
+    def trunc_collate(self, batch):
+        """
+        args:
+            batch - list of (tensor, label)
+
+        reutrn:
+            xs - a tensor of all examples in 'batch' after padding
+        """
+        # find longest sequence
+        min_len = min(map(lambda x: x.shape[self.dim], batch))
+        #print(f"max_length = {list(max_len)}")
+        # Truncate according to min_len
+        batch = list(map(lambda x:
+                        trunc_tensor(x, trunc=min_len), batch))
+        #print(f"Inside collate function: type of variabel 'batch' -> {batch.type()}")
+        #print(f"Inside collate function: size of variabel 'batch' -> {batch.size()}")
+
+        # stack all
+        xs = torch.stack(batch, dim=0)
+        return xs
+
+    def __call__(self, batch):
+        return self.trunc_collate(batch)
