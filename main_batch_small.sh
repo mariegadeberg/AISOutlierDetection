@@ -6,7 +6,7 @@
 #BSUB -q gpuv100
 
 ### -- ask for number of cores (default: 1) -- 
-#BSUB -n 2
+#BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- select the resources: 1 gpu in exclusive process mode --
@@ -43,8 +43,8 @@
 
 # run program
 python AISOutlierDetection/train.py \
-     --num_epoch 50 \
+     --num_epoch 100 \
      --train "train_bh_small.pcl" \
-     --val "val_bh_small.pcl" \
+     --val "val_bh_.pcl" \
      --ROI "bh" \
      --batchsize 32
