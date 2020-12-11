@@ -63,10 +63,6 @@ class VRNN(nn.Module):
 
         batch_size = inputs.size(0)
 
-        #out = torch.zeros(1, 1, self.latent_shape)
-        #h = torch.zeros(1, 1, self.latent_shape)
-        #c = torch.zeros(1, 1, self.latent_shape)
-
         out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
         h = self.h.expand(1, batch_size, self.h.shape[-1]).contiguous()
         c = self.c.expand(1, batch_size, self.c.shape[-1]).contiguous()

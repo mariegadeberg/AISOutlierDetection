@@ -108,7 +108,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             #plot_grad_flow(model.named_parameters())
             #w_ave = get_weights(w_ave, model)
 
-            if i % 100 == 0:
+            if i % 1000 == 0:
                 diagnostics_list.append(diagnostics)
 
             epoch_train_kl += np.mean(diagnostics["kl"])
