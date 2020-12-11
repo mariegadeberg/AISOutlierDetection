@@ -59,6 +59,10 @@ class Config(object):
                     "sk": np.arange(long_min, ROI_boundary_long + lat_long_res, lat_long_res),
                     "blt": np.arange(long_min, ROI_boundary_long + lat_long_res, lat_long_res)}
 
+    breaks = {"bh": (len(lat_columns["bh"]), len(lat_columns["bh"]) + len(long_columns["bh"]), len(lat_columns["bh"]) + len(long_columns["bh"]) + len(sog_columns)),
+              "sk": (len(lat_columns["sk"]), len(lat_columns["sk"]) + len(long_columns["sk"]), len(lat_columns["sk"]) + len(long_columns["sk"]) + len(sog_columns)),
+              "blt": (len(lat_columns["blt"]), len(lat_columns["blt"]) + len(long_columns["blt"]), len(lat_columns["blt"]) + len(long_columns["blt"]) + len(sog_columns))}
+
 
     #total_bins = len(sog_columns) + len(cog_columns) + len(lat_columns) + len(long_columns)
 
@@ -70,3 +74,4 @@ class Config(object):
     latent_shape = 100
 
     lr = 0.0003
+

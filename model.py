@@ -56,6 +56,7 @@ class VRNN(nn.Module):
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=2))
+        px_logits = px_logits.view(-1, self.input_shape)
         return Bernoulli(logits=px_logits)
 
     def forward(self, inputs):
@@ -104,6 +105,7 @@ class VRNN(nn.Module):
             out, (h, c) = self.rnn(rnn_input, (h, c))
 
             h_out.append(out.mean(axis=2))
+            #h_out.append(z_hat.mean(axis=2))
 
             #Calulating loss
             log_px = px.log_prob(x).sum(axis=2)
@@ -117,7 +119,7 @@ class VRNN(nn.Module):
 
             loss_list.append(-elbo_beta)
             kl_list.append(kl)
-            log_px_list.append(log_px)
+            log_px_list.append(px.log_prob(x))
 
         with torch.no_grad():
             diagnostics = {'loss_list': torch.stack(loss_list).cpu().numpy(),
