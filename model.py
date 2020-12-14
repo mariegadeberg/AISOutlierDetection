@@ -30,8 +30,8 @@ class VRNN(nn.Module):
                                    nn.ReLU())
 
         self.encoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, 2*self.latent_shape),
-                                     nn.BatchNorm1d(2*self.latent_shape),
                                      nn.ReLU())
+                                     #nn.BatchNorm1d(2*self.latent_shape),
 
         self.decoder = nn.Sequential(nn.Linear(self.latent_shape+self.latent_shape, self.input_shape),
                                      nn.ReLU())
@@ -118,8 +118,7 @@ class VRNN(nn.Module):
 
             kl = log_qz - log_pz
             elbo_beta = log_px - self.beta * kl
-            #print(elbo_beta.shape)
-            #k+=1
+
             acc_loss += -torch.sum(elbo_beta)
 
             loss_list.append(-elbo_beta)

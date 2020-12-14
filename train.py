@@ -85,15 +85,15 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         epoch_train_logpx = 0
         epoch_val_logpx = 0
 
-        #w_ave = {"phi_x.0.weight":[],
-        #         "phi_z.0.weight":[],
-        #         "prior.0.weight":[],
-        #         "encoder.0.weight":[],
-        #         "decoder.0.weight":[],
-        #         "rnn.weight_ih_l0":[],
-        #         "rnn.weight_hh_l0":[]}
+        w_ave = {"phi_x.0.weight":[],
+                 "phi_z.0.weight":[],
+                 "prior.0.weight":[],
+                 "encoder.0.weight":[],
+                 "decoder.0.weight":[],
+                 "rnn.weight_ih_l0":[],
+                 "rnn.weight_hh_l0":[]}
 
-        #loss_plot = []
+        loss_plot = []
 
         model.train()
         i = 0
@@ -108,10 +108,13 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 
             optimizer.zero_grad()
             loss.backward()
+            #for n, p in model.named_parameters():
+            #    if "decoder" not in n:
+            #nn.utils.clip_grad_norm_(model.parameters(), max_norm=2, norm_type=2)
             optimizer.step()
 
-            #plot_grad_flow(model.named_parameters())
-            #w_ave = get_weights(w_ave, model)
+            plot_grad_flow(model.named_parameters())
+            w_ave = get_weights(w_ave, model)
 
             if i % 200 == 0:
                 diagnostics_list.append(diagnostics)
@@ -120,7 +123,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             epoch_train_logpx += np.mean(diagnostics["log_px"])
 
             epoch_train_loss += loss.item()
-            #loss_plot.append(loss.item())
+            loss_plot.append(loss.item())
 
             i += 1
 
@@ -173,23 +176,23 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 
         epoch += 1
 
-#plt.tight_layout()
-#plt.savefig(save_dir+"/gradient_bars.png")
-##
-#legend = []
-#plt.figure()
-#for name in w_ave.keys():
-#    plt.plot(w_ave[name])
-#    legend.append([name])
-#plt.title("Average of gradients through small dataset")
-#plt.legend(legend)
+plt.tight_layout()
+plt.savefig(save_dir+"/gradient_bars.png")
+#
+legend = []
+plt.figure()
+for name in w_ave.keys():
+    plt.plot(w_ave[name])
+    legend.append([name])
+plt.title("Average of gradients through small dataset")
+plt.legend(legend)
 #plt.ylim(0, 2)
-#plt.savefig(save_dir+"/gradient_flow.png")
-##
-#plt.figure()
-#plt.plot(loss_plot)
-#plt.title("Training loss through small training set")
-#plt.show()
+plt.savefig(save_dir+"/gradient_flow.png")
+#
+plt.figure()
+plt.plot(loss_plot)
+plt.title("Training loss through small training set")
+plt.show()
 
 
 writer.close()

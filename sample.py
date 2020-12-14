@@ -4,11 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Config import *
 from model import VRNN
-from utils_preprocess import AISDataset, TruncCollate
+from utils_preprocess import AISDataset, TruncCollate, prep_mean
 
 state_dict = torch.load("../HPCoutputs/models/bh15epoch/vrnn_bh15_epochs.pt", map_location=torch.device('cpu'))
 #state_dict = torch.load("/Volumes/MNG/models/vrnn_bh10_epochs.pt", map_location=torch.device('cpu'))
-model = VRNN(Config.input_shape["bh"], Config.latent_shape, 1)
+
+mean_ = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
+
+model = VRNN(Config.input_shape["bh"], Config.latent_shape, 1, mean_)
 model.load_state_dict(state_dict)
 
 train_ds = AISDataset("/Volumes/MNG/data/train_bh_.pcl", "/Volumes/MNG/data/mean_bh.pcl")
@@ -29,7 +32,7 @@ for k in range(0,32):
     lat_out = []
     long_out = []
     for i in range(len(diagnostics["log_px"])):
-        t = diagnostics["log_px"][i,k,0,:]
+        t = diagnostics["log_px"][i,k,:]
         lat, long, sog, cog = np.split(t, breaks)
         lat_out.append(lat_cols[np.argmax(lat)])
         long_out.append(long_cols[np.argmax(long)])
@@ -41,7 +44,7 @@ plt.show()
 
 plt.figure()
 for k in range(0, 10):
-    plt.plot(diagnostics["h"][:, k, 0])
+    plt.plot(diagnostics["h"][:, k])
 plt.show()
 
 plt.figure()
