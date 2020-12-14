@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from utils_preprocess import AISDataset
 from Config import *
-from utils_preprocess import TruncCollate
+from utils_preprocess import TruncCollate, prep_mean
 from utils_train import *
 import argparse
 from torch.utils.tensorboard import SummaryWriter
@@ -40,10 +40,14 @@ input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
 lr = Config.lr
 
+mean_path = path+"mean_"+ROI+".pcl"
+
 # Setup for training
 writer = SummaryWriter()
 
-model = VRNN(input_shape, latent_shape, beta)
+mean_ = prep_mean(mean_path)
+
+model = VRNN(input_shape, latent_shape, beta, mean_)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 epoch = 0
@@ -51,10 +55,10 @@ epoch = 0
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
-train_ds = AISDataset(path+train_, path+"mean_"+ROI+".pcl")
+train_ds = AISDataset(path+train_, mean_path)
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
-val_ds = AISDataset(path+val_, path+"mean_"+ROI+".pcl")
+val_ds = AISDataset(path+val_, mean_path)
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
 # move the model to the device
@@ -108,7 +112,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             #plot_grad_flow(model.named_parameters())
             #w_ave = get_weights(w_ave, model)
 
-            if i % 1000 == 0:
+            if i % 200 == 0:
                 diagnostics_list.append(diagnostics)
 
             epoch_train_kl += np.mean(diagnostics["kl"])
@@ -178,6 +182,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 #    legend.append([name])
 #plt.title("Average of gradients through small dataset")
 #plt.legend(legend)
+#plt.ylim(0, 2)
 #plt.savefig(save_dir+"/gradient_flow.png")
 ##
 #plt.figure()

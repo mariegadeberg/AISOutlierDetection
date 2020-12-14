@@ -6,7 +6,7 @@ from Config import *
 from model import VRNN
 from utils_preprocess import AISDataset, TruncCollate
 
-state_dict = torch.load("../HPCoutputs/models/bh_small10epoch/vrnn_bh10_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("../HPCoutputs/models/bh15epoch/vrnn_bh15_epochs.pt", map_location=torch.device('cpu'))
 #state_dict = torch.load("/Volumes/MNG/models/vrnn_bh10_epochs.pt", map_location=torch.device('cpu'))
 model = VRNN(Config.input_shape["bh"], Config.latent_shape, 1)
 model.load_state_dict(state_dict)
@@ -25,7 +25,7 @@ breaks = Config.breaks["bh"]
 
 
 plt.figure()
-for k in range(0,1):
+for k in range(0,32):
     lat_out = []
     long_out = []
     for i in range(len(diagnostics["log_px"])):
@@ -52,7 +52,7 @@ for i in range(0, 10):
     lat_t = lat_cols[np.argmax(lat_t, axis=1)]
     long_t = long_cols[np.argmax(long_t, axis=1)]
 
-    plt.plot(lat_t, long_t, ".-")
+    plt.plot(long_t, lat_t, ".-")
 plt.show()
 
 

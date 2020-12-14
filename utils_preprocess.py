@@ -414,3 +414,11 @@ def get_mean(ROI, Config):
 
 #for ROI in ROIs:
 #    get_mean(ROI, Config)
+
+def prep_mean(mean_path):
+    with open(mean_path, "rb") as f:
+        mean_ = torch.tensor(pickle.load(f))
+
+    mean_ = -torch.log(1/torch.clip(mean_, 0.0001, 0.9999)-1)
+
+    return mean_

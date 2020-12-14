@@ -13,11 +13,12 @@ from torch.autograd import Variable
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, beta):
+    def __init__(self, input_shape, latent_shape, beta, mean_):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
         self.beta = beta
+        self.mean = mean_
 
         self.phi_x = nn.Sequential(nn.Linear(self.input_shape, self.latent_shape),
                                    nn.ReLU())
@@ -37,9 +38,10 @@ class VRNN(nn.Module):
 
         self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape, batch_first=True)
 
-        self.register_buffer('out', torch.zeros(1, 1, self.latent_shape))
-        self.register_buffer('h', torch.zeros(1, 1, self.latent_shape))
+        self.register_buffer('out', torch.zeros(1, self.latent_shape))
+        self.register_buffer('h', torch.zeros(1, self.latent_shape))
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
+
 
     def _prior(self, h):
         hidden = self.prior(h)
@@ -47,16 +49,18 @@ class VRNN(nn.Module):
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def posterior(self, hidden, x):
-        encoder_input = torch.cat([hidden, x], dim=2).squeeze()
+        encoder_input = torch.cat([hidden, x], dim=1)
         hidden = self.encoder(encoder_input)
-        #hidden = self.encoder(torch.cat([hidden, x]))
-        hidden = hidden.unsqueeze(1)
+        #hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
-        px_logits = self.decoder(torch.cat([z_enc, h], dim=2))
-        px_logits = px_logits.view(-1, self.input_shape)
+        px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
+        px_logits = px_logits.view(-1, self.input_shape) + self.mean
+        #print(self.mean)
+        #print(px_logits.shape)
+        #k+=1
         return Bernoulli(logits=px_logits)
 
     def forward(self, inputs):
@@ -77,7 +81,7 @@ class VRNN(nn.Module):
 
         #for x in inputs:
         for t in range(inputs.size(1)):
-            x = inputs[:, t, :].unsqueeze(1)
+            x = inputs[:, t, :]#.unsqueeze(1)
 
             #Embed input
             x_hat = self.phi_x(x)
@@ -96,22 +100,27 @@ class VRNN(nn.Module):
 
             #Update h form LSTM
             #rnn_input = torch.cat([x_hat, z_hat], dim=1)
-            rnn_input = torch.cat([x_hat, z_hat], dim=2)
-            #rnn_input = rnn_input.unsqueeze(1)
+            rnn_input = torch.cat([x_hat, z_hat], dim=1)
+            rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
+            out = out.squeeze()
 
-            h_out.append(out.mean(axis=2))
+            h_out.append(out.mean(axis=1))
             #h_out.append(z_hat.mean(axis=2))
-
+            #print(px.log_prob(x).shape)
+            #print(pz.log_prob(z).shape)
+            #print(x.shape)
+            #k +=1
             #Calulating loss
-            log_px = px.log_prob(x).sum(axis=2)
-            log_pz = pz.log_prob(z).sum(axis=2)
-            log_qz = qz.log_prob(z).sum(axis=2)
+            log_px = px.log_prob(x).sum(axis=1)
+            log_pz = pz.log_prob(z).sum(axis=1)
+            log_qz = qz.log_prob(z).sum(axis=1)
 
             kl = log_qz - log_pz
             elbo_beta = log_px - self.beta * kl
-
-            acc_loss += -elbo_beta.mean()
+            #print(elbo_beta.shape)
+            #k+=1
+            acc_loss += -torch.sum(elbo_beta)
 
             loss_list.append(-elbo_beta)
             kl_list.append(kl)
