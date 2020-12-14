@@ -45,15 +45,16 @@ mean_path = path+"mean_"+ROI+".pcl"
 # Setup for training
 writer = SummaryWriter()
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(f">> Using device: {device}")
+
 mean_ = prep_mean(mean_path)
+mean_ = mean_.to(device)
 
 model = VRNN(input_shape, latent_shape, beta, mean_)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 epoch = 0
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(f">> Using device: {device}")
 
 train_ds = AISDataset(path+train_, mean_path)
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
