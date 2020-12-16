@@ -4,6 +4,8 @@ from torch import nn, Tensor
 from torch.nn.functional import softplus
 from torch.distributions import Distribution
 from torch.distributions import Bernoulli
+from torch.nn.functional import binary_cross_entropy_with_logits
+from torch.distributions import ContinuousBernoulli
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -13,12 +15,13 @@ from torch.autograd import Variable
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, beta, mean_):
+    def __init__(self, input_shape, latent_shape, beta, mean_, splits):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
         self.beta = beta
         self.mean = mean_
+        self.splits = splits
 
         self.phi_x = nn.Sequential(nn.Linear(self.input_shape, self.latent_shape),
                                    nn.ReLU())
@@ -42,6 +45,8 @@ class VRNN(nn.Module):
         self.register_buffer('h', torch.zeros(1, self.latent_shape))
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
+        #self.bn = nn.BatchNorm1d(self.latent_shape)
+
 
     def _prior(self, h):
         hidden = self.prior(h)
@@ -53,6 +58,7 @@ class VRNN(nn.Module):
         hidden = self.encoder(encoder_input)
         #hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
+        #u = self.bn(mu)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
@@ -62,6 +68,21 @@ class VRNN(nn.Module):
         #print(px_logits.shape)
         #k+=1
         return Bernoulli(logits=px_logits)
+
+    def get_bce(self, log_px, x):
+        log_px_splits = torch.split(log_px, self.splits, dim=1)
+        x_splits = torch.split(x, self.splits, dim=1)
+        loss = []
+        for log_px, x in zip(log_px_splits, x_splits):
+            loss.append(binary_cross_entropy_with_logits(log_px, x, reduction='mean'))
+
+        #print(loss.shape)
+        #bce = torch.cat(loss, dim=1)
+        #bce.sum(dim=1)
+        bce = torch.stack(loss).sum()
+        return bce
+
+
 
     def forward(self, inputs):
 
@@ -78,7 +99,6 @@ class VRNN(nn.Module):
         h_out = []
 
         z_out = 0
-
         #for x in inputs:
         for t in range(inputs.size(1)):
             x = inputs[:, t, :]#.unsqueeze(1)
@@ -98,28 +118,31 @@ class VRNN(nn.Module):
             #Decode z_hat
             px = self.generative(z_hat, out)
 
-            #Update h form LSTM
+            #Update h from LSTM
             #rnn_input = torch.cat([x_hat, z_hat], dim=1)
             rnn_input = torch.cat([x_hat, z_hat], dim=1)
             rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
             out = out.squeeze()
 
-            h_out.append(out.mean(axis=1))
+            h_out.append(out.mean(dim=1))
             #h_out.append(z_hat.mean(axis=2))
             #print(px.log_prob(x).shape)
             #print(pz.log_prob(z).shape)
             #print(x.shape)
             #k +=1
             #Calulating loss
-            log_px = px.log_prob(x).sum(axis=1)
-            log_pz = pz.log_prob(z).sum(axis=1)
-            log_qz = qz.log_prob(z).sum(axis=1)
+            log_px = px.log_prob(x).sum(dim=1)
+            log_pz = pz.log_prob(z).sum(dim=1)
+            log_qz = qz.log_prob(z).sum(dim=1)
 
             kl = log_qz - log_pz
-            elbo_beta = log_px - self.beta * kl
+            log_px_bce = self.get_bce(px.log_prob(x), x)
+            elbo_beta = log_px_bce + self.beta * kl.mean()
 
-            acc_loss += -torch.sum(elbo_beta)
+            #elbo_beta = log_px - self.beta * kl
+
+            acc_loss += torch.sum(elbo_beta)
 
             loss_list.append(-elbo_beta)
             kl_list.append(kl)
@@ -131,7 +154,7 @@ class VRNN(nn.Module):
                            'kl': torch.stack(kl_list).cpu().numpy(),
                            'h': torch.stack(h_out).cpu().numpy()}
 
-        return acc_loss/len(inputs[0]), diagnostics
+        return acc_loss/inputs.size(1), diagnostics
 
 
 class ReparameterizedDiagonalGaussian(Distribution):

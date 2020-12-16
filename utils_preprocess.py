@@ -410,7 +410,7 @@ def get_mean(ROI, Config):
     with open("/Volumes/MNG/data/mean_"+ROI+".pcl", "wb") as f:
         pickle.dump(mean_all, f)
 
-#ROIs = ["bh", "blt", "sk"]
+#ROIs = ["bh"]
 
 #for ROI in ROIs:
 #    get_mean(ROI, Config)

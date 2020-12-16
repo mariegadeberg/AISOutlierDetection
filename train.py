@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--path", type=str, default="./data/", help="Which directory to find the 'data' folder containing training, validation and test")
 parser.add_argument("--num_epoch", type=int, default=1, help="How many epochs should run during training")
-parser.add_argument("--beta", type=int, default=1, help="The size of the regularization coefficient 'beta'")
+parser.add_argument("--beta", type=float, default=1, help="The size of the regularization coefficient 'beta'")
 parser.add_argument("--save_dir", type=str, default="./models/", help="Directory to save model")
 parser.add_argument("--print_every", type=int, default=1, help="Determines how often it print to terminal. Default every 10th epoch")
 parser.add_argument("--train", type=str, default="train.pcl", help="What training data should be used")
@@ -39,6 +39,7 @@ batchsize = args.batchsize
 input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
 lr = Config.lr
+splits = Config.splits[ROI]
 
 mean_path = path+"mean_"+ROI+".pcl"
 
@@ -51,7 +52,7 @@ print(f">> Using device: {device}")
 mean_ = prep_mean(mean_path)
 mean_ = mean_.to(device)
 
-model = VRNN(input_shape, latent_shape, beta, mean_)
+model = VRNN(input_shape, latent_shape, beta, mean_, splits)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 epoch = 0
@@ -110,9 +111,8 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             loss.backward()
             #for n, p in model.named_parameters():
             #    if "decoder" not in n:
-            #nn.utils.clip_grad_norm_(model.parameters(), max_norm=2, norm_type=2)
+            #nn.utils.clip_grad_norm_(model.parameters(), max_norm=5, norm_type=2)
             optimizer.step()
-
             plot_grad_flow(model.named_parameters())
             w_ave = get_weights(w_ave, model)
 
@@ -193,7 +193,7 @@ plt.figure()
 plt.plot(loss_plot)
 plt.title("Training loss through small training set")
 plt.show()
-
+#
 
 writer.close()
 

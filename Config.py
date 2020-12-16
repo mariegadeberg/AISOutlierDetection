@@ -75,3 +75,6 @@ class Config(object):
 
     lr = 0.0003
 
+    splits = {"bh": (len(lat_columns["bh"]), len(long_columns["bh"]), len(sog_columns), len(cog_columns)),
+              "sk": (len(lat_columns["sk"]), len(long_columns["sk"]), len(sog_columns), len(cog_columns)),
+              "blt": (len(lat_columns["blt"]), len(long_columns["blt"]), len(sog_columns), len(cog_columns))}
