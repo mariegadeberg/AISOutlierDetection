@@ -285,7 +285,7 @@ class AISDataset(torch.utils.data.Dataset):
         return(len(self.dataset))
 
     def __getitem__(self, idx):
-        item = self.dataset[idx]["FourHot"].todense() - self.mean
+        item = self.dataset[idx]["FourHot"].todense() # - self.mean
         return torch.tensor(item, dtype=torch.float)
 
 

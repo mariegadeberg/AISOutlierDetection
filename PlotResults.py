@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh_small100epoch/output_100bh.txt")
-results = pd.read_csv("/Volumes/MNG/models/output_10bh.txt")
+results = pd.read_csv("/Volumes/MNG/models/output_5bh.txt")
 
 
 
@@ -34,7 +34,7 @@ with open("../HPCoutputs/models/bh_small100epoch/diagnostics_100_bh.pcl", "rb") 
     d2 = pickle.load(f)
 
 
-with open("/Volumes/MNG/models/diagnostics_1_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/models/diagnostics_5_bh.pcl", "rb") as f:
     d2 = pickle.load(f)
 
 plt.figure()
@@ -52,6 +52,12 @@ plt.plot(d2[1]["h"][:,:,0])
 plt.title("h development through random chosen path")
 plt.show()
 
+plt.figure()
+plt.plot(d2[4]["mu_prior"].mean(axis=1), 'b')
+plt.plot(d2[4]["mu_post"].mean(axis=1), 'r')
+plt.legend(["Prior", "Posterior"])
+plt.title("Mean of batch means from distributions through timesteps")
+plt.show()
 
 with open("/Volumes/MNG/models/diagnostics_1_bh.pcl", "rb") as f:
     d2 = pickle.load(f)

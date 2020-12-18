@@ -58,12 +58,12 @@ class VRNN(nn.Module):
         hidden = self.encoder(encoder_input)
         #hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
-        #u = self.bn(mu)
+        #mu = self.bn(mu)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
-        px_logits = px_logits.view(-1, self.input_shape) + self.mean
+        px_logits = px_logits.view(-1, self.input_shape) #+ self.mean
         #print(self.mean)
         #print(px_logits.shape)
         #k+=1
@@ -74,12 +74,12 @@ class VRNN(nn.Module):
         x_splits = torch.split(x, self.splits, dim=1)
         loss = []
         for log_px, x in zip(log_px_splits, x_splits):
-            loss.append(binary_cross_entropy_with_logits(log_px, x, reduction='mean'))
+            loss.append(binary_cross_entropy_with_logits(log_px, x, reduction='sum'))
 
         #print(loss.shape)
         #bce = torch.cat(loss, dim=1)
         #bce.sum(dim=1)
-        bce = torch.stack(loss).sum()
+        bce = torch.stack(loss).sum() / x.size(0)
         return bce
 
 
@@ -88,8 +88,8 @@ class VRNN(nn.Module):
 
         batch_size = inputs.size(0)
 
-        out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
-        h = self.h.expand(1, batch_size, self.h.shape[-1]).contiguous()
+        #out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
+        h = self.h.expand(batch_size, *self.out.shape[1:]).contiguous()
         c = self.c.expand(1, batch_size, self.c.shape[-1]).contiguous()
 
         acc_loss = 0
@@ -97,7 +97,8 @@ class VRNN(nn.Module):
         kl_list = []
         log_px_list = []
         h_out = []
-
+        mu_prior = []
+        mu_post = []
         z_out = 0
         #for x in inputs:
         for t in range(inputs.size(1)):
@@ -106,26 +107,27 @@ class VRNN(nn.Module):
             #Embed input
             x_hat = self.phi_x(x)
             #Create prior distribution
-            pz = self._prior(out)
+            pz = self._prior(h)
 
             #Create approximate posterior
-            qz = self.posterior(out, x_hat)
+            qz = self.posterior(h, x_hat)
 
             #Sample and embed z from posterior
             z = qz.rsample()
             z_hat = self.phi_z(z)
 
             #Decode z_hat
-            px = self.generative(z_hat, out)
+            px = self.generative(z_hat, h)
 
             #Update h from LSTM
             #rnn_input = torch.cat([x_hat, z_hat], dim=1)
             rnn_input = torch.cat([x_hat, z_hat], dim=1)
             rnn_input = rnn_input.unsqueeze(1)
-            out, (h, c) = self.rnn(rnn_input, (h, c))
-            out = out.squeeze()
+            h = h.unsqueeze(0)
+            _, (h, c) = self.rnn(rnn_input, (h, c))
+            h = h.squeeze()
 
-            h_out.append(out.mean(dim=1))
+            h_out.append(h.mean(dim=1))
             #h_out.append(z_hat.mean(axis=2))
             #print(px.log_prob(x).shape)
             #print(pz.log_prob(z).shape)
@@ -138,21 +140,25 @@ class VRNN(nn.Module):
 
             kl = log_qz - log_pz
             log_px_bce = self.get_bce(px.log_prob(x), x)
-            elbo_beta = log_px_bce + self.beta * kl.mean()
+            elbo_beta = log_px_bce - self.beta * kl.mean()
 
             #elbo_beta = log_px - self.beta * kl
 
-            acc_loss += torch.sum(elbo_beta)
+            acc_loss += -torch.sum(elbo_beta)
 
             loss_list.append(-elbo_beta)
             kl_list.append(kl)
             log_px_list.append(px.log_prob(x))
+            mu_prior.append(pz.mu.sum(dim=1))
+            mu_post.append(qz.mu.sum(dim=1))
 
         with torch.no_grad():
             diagnostics = {'loss_list': torch.stack(loss_list).cpu().numpy(),
                            'log_px': torch.stack(log_px_list).cpu().numpy(),
                            'kl': torch.stack(kl_list).cpu().numpy(),
-                           'h': torch.stack(h_out).cpu().numpy()}
+                           'h': torch.stack(h_out).cpu().numpy(),
+                           "mu_prior": torch.stack(mu_prior).cpu().numpy(),
+                           "mu_post": torch.stack(mu_post).cpu().numpy()}
 
         return acc_loss/inputs.size(1), diagnostics
 
