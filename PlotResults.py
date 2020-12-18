@@ -2,9 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small100epoch/output_100bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh_small100epoch_BN/output_100bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_5bh.txt")
-
 
 
 plt.figure()
