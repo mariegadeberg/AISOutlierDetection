@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small_no_mean100/output_100bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh_small100epoch/output_100bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_5bh.txt")
 
 
@@ -29,7 +29,7 @@ plt.plot(results.training_logpx)
 plt.title("Logpx for Bornholm model for 100 epochs")
 plt.show()
 
-with open("../HPCoutputs/models/bh_small_no_mean100/diagnostics_100_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh_small100epoch/diagnostics_100_bh.pcl", "rb") as f:
     d2 = pickle.load(f)
 
 

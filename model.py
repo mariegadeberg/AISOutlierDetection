@@ -45,8 +45,8 @@ class VRNN(nn.Module):
         self.register_buffer('h', torch.zeros(1, self.latent_shape))
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
-        #self.bn = nn.BatchNorm1d(self.latent_shape)
-        #self.bn.weight.requires_grad = False
+        self.bn = nn.BatchNorm1d(self.latent_shape)
+        self.bn.weight.requires_grad = False
 
     def _prior(self, h):
         hidden = self.prior(h)
@@ -58,7 +58,7 @@ class VRNN(nn.Module):
         hidden = self.encoder(encoder_input)
         #hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
-        #mu = self.bn(mu)
+        mu = self.bn(mu)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
@@ -145,7 +145,7 @@ class VRNN(nn.Module):
 
             kl = log_qz - log_pz
             #kl = self.get_kl_analytic(qz, pz)
-            log_px_bce = self.get_bce(px.log_prob(x), x)
+            #log_px_bce = self.get_bce(px.log_prob(x), x)
             #elbo_beta = log_px_bce - self.beta * kl.mean()
 
             elbo_beta = log_px - self.beta * kl
