@@ -6,8 +6,8 @@ from Config import *
 from model import VRNN
 from utils_preprocess import AISDataset, TruncCollate, prep_mean
 
-state_dict = torch.load("../HPCoutputs/models/bh_small100epoch/vrnn_bh100_epochs.pt", map_location=torch.device('cpu'))
-state_dict = torch.load("/Volumes/MNG/models/vrnn_bh10_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("../HPCoutputs/models/bh_small_no_mean100/vrnn_bh100_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("/Volumes/MNG/models/vrnn_bh5_epochs.pt", map_location=torch.device('cpu'))
 
 mean_ = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
 
@@ -28,7 +28,7 @@ breaks = Config.breaks["bh"]
 
 
 plt.figure()
-for k in range(0,5):
+for k in range(0,32):
     lat_out = []
     long_out = []
     for i in range(len(diagnostics["log_px"])):
@@ -38,14 +38,14 @@ for k in range(0,5):
         long_out.append(long_cols[np.argmax(long)])
     #print(lat[np.argmax(lat)-10:np.argmax(lat)+10])
     #print(max(lat))
-    #print(f"Average Latitude: {np.mean(lat_out)}")
-    #print(f"Average Longitude: {np.mean(long_out)}")
+    print(f"Average Latitude: {np.mean(lat_out)}")
+    print(f"Average Longitude: {np.mean(long_out)}")
     plt.plot(long_out, lat_out, ".-")
 plt.show()
 
 plt.figure()
 for k in range(0, 10):
-    plt.plot(diagnostics["log_px"][:, k, :].mean(axis=1))
+    plt.plot(diagnostics["logits"][:, k, :].mean(axis=1))
 plt.show()
 
 plt.figure()

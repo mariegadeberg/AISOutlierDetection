@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small100epoch/output_100bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh_small_no_mean100/output_100bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_5bh.txt")
 
 
@@ -22,7 +22,6 @@ plt.legend(["Traning kl", "Validation kl"])
 plt.title("KL for Bornholm model for 100 epochs")
 plt.show()
 
-
 plt.figure()
 plt.plot(results.training_logpx)
 #plt.plot(results.validation_logpx)
@@ -30,7 +29,7 @@ plt.plot(results.training_logpx)
 plt.title("Logpx for Bornholm model for 100 epochs")
 plt.show()
 
-with open("../HPCoutputs/models/bh_small100epoch/diagnostics_100_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh_small_no_mean100/diagnostics_100_bh.pcl", "rb") as f:
     d2 = pickle.load(f)
 
 
@@ -43,12 +42,12 @@ plt.title("KL development through random chosen path")
 plt.show()
 
 plt.figure()
-plt.plot(d2[0]["log_px"])
+plt.plot(d2[0]["log_px"].sum(axis=2))
 plt.title("Log_px development through random chosen path")
 plt.show()
 
 plt.figure()
-plt.plot(d2[1]["h"][:,:,0])
+plt.plot(d2[99]["h"][:,:])
 plt.title("h development through random chosen path")
 plt.show()
 

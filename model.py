@@ -46,7 +46,7 @@ class VRNN(nn.Module):
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
         #self.bn = nn.BatchNorm1d(self.latent_shape)
-
+        #self.bn.weight.requires_grad = False
 
     def _prior(self, h):
         hidden = self.prior(h)
@@ -63,7 +63,7 @@ class VRNN(nn.Module):
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
-        px_logits = px_logits.view(-1, self.input_shape) #+ self.mean
+        px_logits = px_logits.view(-1, self.input_shape) + self.mean
         #print(self.mean)
         #print(px_logits.shape)
         #k+=1
@@ -82,14 +82,20 @@ class VRNN(nn.Module):
         bce = torch.stack(loss).sum() / x.size(0)
         return bce
 
+    def get_kl_analytic(self, qz, pz):
+        kld_element = (2 * torch.log(pz.sigma) - 2 * torch.log(qz.sigma) +
+                       (qz.sigma**2 + (qz.mu - pz.mu)**2) /
+                       pz.sigma**2 - 1)
+        return 0.5 * torch.sum(kld_element)
+
 
 
     def forward(self, inputs):
 
         batch_size = inputs.size(0)
 
-        #out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
-        h = self.h.expand(batch_size, *self.out.shape[1:]).contiguous()
+        out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
+        h = self.h.expand(1, batch_size, self.c.shape[-1]).contiguous()
         c = self.c.expand(1, batch_size, self.c.shape[-1]).contiguous()
 
         acc_loss = 0
@@ -107,29 +113,28 @@ class VRNN(nn.Module):
             #Embed input
             x_hat = self.phi_x(x)
             #Create prior distribution
-            pz = self._prior(h)
+            pz = self._prior(out)
 
             #Create approximate posterior
-            qz = self.posterior(h, x_hat)
+            qz = self.posterior(out, x_hat)
 
             #Sample and embed z from posterior
             z = qz.rsample()
             z_hat = self.phi_z(z)
 
             #Decode z_hat
-            px = self.generative(z_hat, h)
+            px = self.generative(z_hat, out)
 
             #Update h from LSTM
-            #rnn_input = torch.cat([x_hat, z_hat], dim=1)
+
             rnn_input = torch.cat([x_hat, z_hat], dim=1)
             rnn_input = rnn_input.unsqueeze(1)
-            h = h.unsqueeze(0)
-            _, (h, c) = self.rnn(rnn_input, (h, c))
-            h = h.squeeze()
+            out, (h, c) = self.rnn(rnn_input, (h, c))
+            out = out.squeeze()
 
-            h_out.append(h.mean(dim=1))
+            h_out.append(out.mean(dim=1))
             #h_out.append(z_hat.mean(axis=2))
-            #print(px.log_prob(x).shape)
+            #print(px.logits.shape)
             #print(pz.log_prob(z).shape)
             #print(x.shape)
             #k +=1
@@ -139,16 +144,17 @@ class VRNN(nn.Module):
             log_qz = qz.log_prob(z).sum(dim=1)
 
             kl = log_qz - log_pz
+            #kl = self.get_kl_analytic(qz, pz)
             log_px_bce = self.get_bce(px.log_prob(x), x)
-            elbo_beta = log_px_bce - self.beta * kl.mean()
+            #elbo_beta = log_px_bce - self.beta * kl.mean()
 
-            #elbo_beta = log_px - self.beta * kl
+            elbo_beta = log_px - self.beta * kl
 
             acc_loss += -torch.sum(elbo_beta)
 
             loss_list.append(-elbo_beta)
             kl_list.append(kl)
-            log_px_list.append(px.log_prob(x))
+            log_px_list.append(px.logits)
             mu_prior.append(pz.mu.sum(dim=1))
             mu_post.append(qz.mu.sum(dim=1))
 
