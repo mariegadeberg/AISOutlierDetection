@@ -6,20 +6,21 @@ from Config import *
 from model import VRNN
 from utils_preprocess import AISDataset, TruncCollate, prep_mean
 
-state_dict = torch.load("../HPCoutputs/models/bh_small_100modPriPost/vrnn_bh100_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("../HPCoutputs/models/bh_small100_fivo/vrnn_bh100_epochs.pt", map_location=torch.device('cpu'))
 state_dict = torch.load("/Volumes/MNG/models/vrnn_bh16_epochs.pt", map_location=torch.device('cpu'))
 
 mean_ = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
 
-model = VRNN(Config.input_shape["bh"], Config.latent_shape, 1, mean_, Config.splits["bh"])
-model.load_state_dict(state_dict)
-
 train_ds = AISDataset("/Volumes/MNG/data/Small/train_bh_small.pcl", "/Volumes/MNG/data/mean_bh.pcl")
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True, collate_fn=TruncCollate())
 
+model = VRNN(Config.input_shape["bh"], Config.latent_shape, 1, mean_, Config.splits["bh"], len(train_loader))
+model.load_state_dict(state_dict)
+
 it = iter(train_loader)
 inputs = next(it)
-loss, diagnostics = model(inputs)
+model.eval()
+loss, diagnostics = model(inputs, 1)
 
 
 lat_cols = pd.Float64Index(np.round(Config.lat_columns["bh"], 2))

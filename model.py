@@ -15,13 +15,14 @@ from torch.autograd import Variable
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, beta, mean_, splits):
+    def __init__(self, input_shape, latent_shape, beta, mean_, splits, len_data):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
         self.beta = beta
         self.mean = mean_
         self.splits = splits
+        self.len_data = len_data
 
         self.phi_x = nn.Sequential(nn.Linear(self.input_shape, self.latent_shape),
                                    nn.ReLU())
@@ -97,9 +98,11 @@ class VRNN(nn.Module):
 
 
 
-    def forward(self, inputs):
+    def forward(self, inputs, beta):
 
         batch_size = inputs.size(0)
+
+        #kl_weight = batch_size/self.len_data
 
         out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
         h = self.h.expand(1, batch_size, self.c.shape[-1]).contiguous()
@@ -155,11 +158,18 @@ class VRNN(nn.Module):
             #log_px_bce = self.get_bce(px.log_prob(x), x)
             #elbo_beta = log_px_bce - self.beta * kl.mean()
 
-            elbo_beta = log_px - self.beta * kl
+            elbo_beta = log_px - beta * kl
 
-            acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
+            acc_loss += -torch.mean(elbo_beta)
+
+            #acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
+
+            #iwae_elbo = log_px - kl_weight * kl
+            #weight = torch.nn.functional.softmax(iwae_elbo, dim=-1)
+            #acc_loss += -torch.mean(torch.sum(weight * iwae_elbo, dim=-1), dim=0)
 
             loss_list.append(-elbo_beta)
+            #loss_list.append(acc_loss)
             kl_list.append(kl)
             log_px_list.append(px.logits)
             mu_prior.append(pz.mu.sum(dim=1))

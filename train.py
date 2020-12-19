@@ -52,8 +52,6 @@ print(f">> Using device: {device}")
 mean_ = prep_mean(mean_path)
 mean_ = mean_.to(device)
 
-model = VRNN(input_shape, latent_shape, beta, mean_, splits)
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 epoch = 0
 
@@ -63,11 +61,19 @@ train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuff
 val_ds = AISDataset(path+val_, mean_path)
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
+model = VRNN(input_shape, latent_shape, beta, mean_, splits, len(train_loader))
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 # move the model to the device
 model = model.to(device)
 model.apply(init_weights)
 
 diagnostics_list = []
+
+kl_start = 0.1
+warm_up = 10
+
+kl_weight = kl_start
+anneal_rate = (1.0 - kl_start) / (warm_up * (len(train_loader) / batchsize))
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]
@@ -99,13 +105,14 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         model.train()
         i = 0
         for inputs in train_loader:
+            kl_weight = min(1.0, kl_weight + anneal_rate)
 
             inputs = inputs.to(device)
 
             if i % 1000 == 0:
                 print(f"     passing input {i}/{len(train_loader)}")
 
-            loss, diagnostics = model(inputs)
+            loss, diagnostics = model(inputs, kl_weight)
 
             optimizer.zero_grad()
             loss.backward()
@@ -139,7 +146,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             for inputs in val_loader:
                 inputs = inputs.to(device)
 
-                loss, diagnostics = model(inputs)
+                loss, diagnostics = model(inputs, 1)
 
                 epoch_val_kl += np.mean(diagnostics["kl"])
                 epoch_val_logpx += np.mean(diagnostics["log_px"])
