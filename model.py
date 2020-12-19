@@ -157,7 +157,7 @@ class VRNN(nn.Module):
 
             elbo_beta = log_px - self.beta * kl
 
-            acc_loss += -torch.sum(elbo_beta)
+            acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
 
             loss_list.append(-elbo_beta)
             kl_list.append(kl)
