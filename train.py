@@ -73,7 +73,7 @@ kl_start = 0.1
 warm_up = 10
 
 kl_weight = kl_start
-anneal_rate = (1.0 - kl_start) / (warm_up * (len(train_loader) / batchsize))
+anneal_rate = (1.0 - kl_start) / (warm_up * (len(train_ds) / batchsize))
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]

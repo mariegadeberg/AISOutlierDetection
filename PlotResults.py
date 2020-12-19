@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small100_fivo/output_100bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh_15KLann/output_15bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_16bh.txt")
 
 
