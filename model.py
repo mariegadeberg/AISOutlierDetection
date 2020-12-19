@@ -160,9 +160,9 @@ class VRNN(nn.Module):
 
             elbo_beta = log_px - beta * kl
 
-            acc_loss += -torch.mean(elbo_beta)
+            #acc_loss += -torch.mean(elbo_beta)
 
-            #acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
+            acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
 
             #iwae_elbo = log_px - kl_weight * kl
             #weight = torch.nn.functional.softmax(iwae_elbo, dim=-1)

@@ -104,6 +104,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 
         model.train()
         i = 0
+        print(f"kl_weight: {kl_weight}")
         for inputs in train_loader:
             kl_weight = min(1.0, kl_weight + anneal_rate)
 

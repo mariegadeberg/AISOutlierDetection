@@ -29,7 +29,7 @@ breaks = Config.breaks["bh"]
 
 
 plt.figure()
-for k in range(0,1):
+for k in range(0,2):
     lat_out = []
     long_out = []
     for i in range(len(diagnostics["log_px"])):
