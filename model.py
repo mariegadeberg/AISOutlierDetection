@@ -15,11 +15,10 @@ from torch.autograd import Variable
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, beta, mean_, splits, len_data):
+    def __init__(self, input_shape, latent_shape, mean_, splits, len_data):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
-        self.beta = beta
         self.mean = mean_
         self.splits = splits
         self.len_data = len_data
@@ -70,8 +69,9 @@ class VRNN(nn.Module):
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
-        px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
-        px_logits = px_logits.view(-1, self.input_shape) + self.mean
+        px_logits = self.decoder(torch.cat([z_enc, h], dim=2))
+        px_logits = px_logits + self.mean
+        #px_logits = px_logits.view(-1, self.input_shape) + self.mean
         #print(self.mean)
         #print(px_logits.shape)
         #k+=1
@@ -118,7 +118,7 @@ class VRNN(nn.Module):
         z_out = 0
         #for x in inputs:
         for t in range(inputs.size(1)):
-            x = inputs[:, t, :]#.unsqueeze(1)
+            x = inputs[:, t, :]
 
             #Embed input
             x_hat = self.phi_x(x)
@@ -130,24 +130,27 @@ class VRNN(nn.Module):
 
             #Sample and embed z from posterior
             z = qz.rsample()
+            if 10 > 1:
+                z_ = [z]
+                for i in range(10-1):
+                    z_.append(qz.rsample())
+                z = torch.stack(z_, dim=2).permute(0, 2, 1)
+
             z_hat = self.phi_z(z)
 
             #Decode z_hat
+            out = out.unsqueeze(1).expand(-1, 10, -1)
             px = self.generative(z_hat, out)
 
             #Update h from LSTM
 
-            rnn_input = torch.cat([x_hat, z_hat], dim=1)
-            rnn_input = rnn_input.unsqueeze(1)
+            rnn_input = torch.cat([x_hat.unsqueeze(1).expand(-1, 10, -1), z_hat], dim=2)
+            #rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
             out = out.squeeze()
 
             h_out.append(out.mean(dim=1))
-            #h_out.append(z_hat.mean(axis=2))
-            #print(px.logits.shape)
-            #print(pz.log_prob(z).shape)
-            #print(x.shape)
-            #k +=1
+
             #Calulating loss
             log_px = px.log_prob(x).sum(dim=1)
             log_pz = pz.log_prob(z).sum(dim=1)
@@ -161,8 +164,8 @@ class VRNN(nn.Module):
             elbo_beta = log_px - beta * kl
 
             #acc_loss += -torch.mean(elbo_beta)
-
-            acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
+            acc_loss += elbo_beta
+            #acc_loss += -torch.mean(torch.logsumexp(elbo_beta,0))
 
             #iwae_elbo = log_px - kl_weight * kl
             #weight = torch.nn.functional.softmax(iwae_elbo, dim=-1)
@@ -183,7 +186,7 @@ class VRNN(nn.Module):
                            "mu_prior": torch.stack(mu_prior).cpu().numpy(),
                            "mu_post": torch.stack(mu_post).cpu().numpy()}
 
-        return acc_loss/inputs.size(1), diagnostics
+        return -torch.mean(acc_loss/inputs.size(1)), diagnostics
 
 
 class ReparameterizedDiagonalGaussian(Distribution):

@@ -23,6 +23,8 @@ parser.add_argument("--train", type=str, default="train.pcl", help="What trainin
 parser.add_argument("--val", type=str, default="val.pcl", help="What training data should be used")
 parser.add_argument("--ROI", type=str, default="blt", help="Specify the region of interest")
 parser.add_argument("--batchsize", type=int, default=1)
+parser.add_argument("--kl_start", type=float, default=0.1, help="initial kl weight")
+parser.add_argument("--warm_up", type=int, default=1, help="how many epochs before kl weight reaches 1")
 
 args = parser.parse_args()
 
@@ -61,7 +63,7 @@ train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuff
 val_ds = AISDataset(path+val_, mean_path)
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
-model = VRNN(input_shape, latent_shape, beta, mean_, splits, len(train_loader))
+model = VRNN(input_shape, latent_shape, mean_, splits, len(train_loader))
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 # move the model to the device
 model = model.to(device)
@@ -69,11 +71,12 @@ model.apply(init_weights)
 
 diagnostics_list = []
 
-kl_start = 0.1
-warm_up = 10
+if args.warm_up > 1:
+    kl_weight = args.kl_start
+else:
+    kl_weight = 1
 
-kl_weight = kl_start
-anneal_rate = (1.0 - kl_start) / (warm_up * (len(train_ds) / batchsize))
+anneal_rate = (1.0 - args.kl_start) / (args.warm_up * (len(train_ds) / batchsize))
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]
@@ -104,7 +107,6 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 
         model.train()
         i = 0
-        print(f"kl_weight: {kl_weight}")
         for inputs in train_loader:
             kl_weight = min(1.0, kl_weight + anneal_rate)
 

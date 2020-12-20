@@ -6,7 +6,7 @@ from Config import *
 from model import VRNN
 from utils_preprocess import AISDataset, TruncCollate, prep_mean
 
-state_dict = torch.load("../HPCoutputs/models/bh_small100_fivo/vrnn_bh100_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("../HPCoutputs/models/bh_small100KLann_fivo/vrnn_bh100_epochs.pt", map_location=torch.device('cpu'))
 state_dict = torch.load("/Volumes/MNG/models/vrnn_bh16_epochs.pt", map_location=torch.device('cpu'))
 
 mean_ = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
@@ -29,7 +29,7 @@ breaks = Config.breaks["bh"]
 
 
 plt.figure()
-for k in range(0,2):
+for k in range(0,1):
     lat_out = []
     long_out = []
     for i in range(len(diagnostics["log_px"])):
