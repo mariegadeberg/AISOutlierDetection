@@ -69,7 +69,7 @@ class VRNN(nn.Module):
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
-        px_logits = self.decoder(torch.cat([z_enc, h], dim=2))
+        px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
         px_logits = px_logits + self.mean
         #px_logits = px_logits.view(-1, self.input_shape) + self.mean
         #print(self.mean)
@@ -130,22 +130,15 @@ class VRNN(nn.Module):
 
             #Sample and embed z from posterior
             z = qz.rsample()
-            if 10 > 1:
-                z_ = [z]
-                for i in range(10-1):
-                    z_.append(qz.rsample())
-                z = torch.stack(z_, dim=2).permute(0, 2, 1)
-
             z_hat = self.phi_z(z)
 
             #Decode z_hat
-            out = out.unsqueeze(1).expand(-1, 10, -1)
             px = self.generative(z_hat, out)
 
             #Update h from LSTM
 
-            rnn_input = torch.cat([x_hat.unsqueeze(1).expand(-1, 10, -1), z_hat], dim=2)
-            #rnn_input = rnn_input.unsqueeze(1)
+            rnn_input = torch.cat([x_hat, z_hat], dim=1)
+            rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
             out = out.squeeze()
 
