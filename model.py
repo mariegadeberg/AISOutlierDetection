@@ -15,11 +15,12 @@ from torch.autograd import Variable
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, mean_, splits, len_data):
+    def __init__(self, input_shape, latent_shape, mean_logits, mean_,splits, len_data):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
-        self.mean = mean_
+        self.mean_logits = mean_logits
+        self.mean_ = torch.tensor(mean_, dtype=torch.float)
         self.splits = splits
         self.len_data = len_data
 
@@ -45,32 +46,38 @@ class VRNN(nn.Module):
         self.register_buffer('h', torch.zeros(1, self.latent_shape))
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
-        #self.bn = nn.BatchNorm1d(self.latent_shape)
-        #self.bn.weight.requires_grad = False
+        self.bn = nn.BatchNorm1d(self.latent_shape)
+        self.bn.weight.requires_grad = False
 
     def _prior(self, h, sigma_min=0.0, raw_sigma_bias=0.5):
         hidden = self.prior(h)
         mu, log_sigma = hidden.chunk(2, dim=-1)
 
-        sigma = log_sigma.exp()
-        sigma_min = torch.full_like(sigma, sigma_min)
-        sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
-        log_sigma = torch.log(sigma)
+        #sigma = log_sigma.exp()
+        #sigma_min = torch.full_like(sigma, sigma_min)
+        #sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
+        #log_sigma = torch.log(sigma)
 
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
-    def posterior(self, hidden, x, prior_mu):
+    def posterior(self, hidden, x, prior_mu,  sigma_min=0.0, raw_sigma_bias=0.5):
         encoder_input = torch.cat([hidden, x], dim=1)
         hidden = self.encoder(encoder_input)
         #hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
+
+        #sigma = log_sigma.exp()
+        #sigma_min = torch.full_like(sigma, sigma_min)
+        #sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
+        #log_sigma = torch.log(sigma)
+
         mu = mu + prior_mu
-        #mu = self.bn(mu)
+        mu = self.bn(mu)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
-        px_logits = px_logits + self.mean
+        px_logits = px_logits + self.mean_logits
         #px_logits = px_logits.view(-1, self.input_shape) + self.mean
         #print(self.mean)
         #print(px_logits.shape)
@@ -119,9 +126,10 @@ class VRNN(nn.Module):
         #for x in inputs:
         for t in range(inputs.size(1)):
             x = inputs[:, t, :]
+            x_ = x - self.mean_
 
             #Embed input
-            x_hat = self.phi_x(x)
+            x_hat = self.phi_x(x_)
             #Create prior distribution
             pz = self._prior(out)
 

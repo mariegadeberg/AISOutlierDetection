@@ -51,8 +51,12 @@ writer = SummaryWriter()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
-mean_ = prep_mean(mean_path)
+with open(mean_path, "rb") as f:
+    mean_ = torch.tensor(pickle.load(f))
 mean_ = mean_.to(device)
+
+mean_logits = prep_mean(mean_path)
+mean_logits = mean_logits.to(device)
 
 
 epoch = 0
@@ -63,7 +67,7 @@ train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuff
 val_ds = AISDataset(path+val_, mean_path)
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
-model = VRNN(input_shape, latent_shape, mean_, splits, len(train_loader))
+model = VRNN(input_shape, latent_shape, mean_logits, mean_, splits, len(train_loader))
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 # move the model to the device
 model = model.to(device)
