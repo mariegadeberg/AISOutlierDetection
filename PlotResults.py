@@ -2,22 +2,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small100KLann_fivo/output_100bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh_small100_BN/output_100bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_16bh.txt")
 
 
 plt.figure()
 plt.plot(results.training_loss)
-plt.plot(results.validation_loss)
-plt.legend(["Traning loss", "Validation loss"])
+#plt.plot(results.validation_loss)
+#plt.legend(["Traning loss", "Validation loss"])
 plt.title("Loss for Bornholm model for 100 epochs")
 plt.show()
 
 
 plt.figure()
 plt.plot(results.training_kl)
-plt.plot(results.validation_kl)
-plt.legend(["Traning kl", "Validation kl"])
+#plt.plot(results.validation_kl)
+#plt.legend(["Traning kl", "Validation kl"])
 plt.title("KL for Bornholm model for 100 epochs")
 plt.show()
 

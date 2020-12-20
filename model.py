@@ -77,7 +77,7 @@ class VRNN(nn.Module):
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
-        px_logits = px_logits + self.mean_logits
+        px_logits = px_logits #+ self.mean_logits
         #px_logits = px_logits.view(-1, self.input_shape) + self.mean
         #print(self.mean)
         #print(px_logits.shape)
@@ -126,10 +126,10 @@ class VRNN(nn.Module):
         #for x in inputs:
         for t in range(inputs.size(1)):
             x = inputs[:, t, :]
-            x_ = x - self.mean_
+            #x_ = x - self.mean_
 
             #Embed input
-            x_hat = self.phi_x(x_)
+            x_hat = self.phi_x(x)
             #Create prior distribution
             pz = self._prior(out)
 
