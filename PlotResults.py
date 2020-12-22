@@ -2,20 +2,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh15_nomean/output_15bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh15_mean/output_15bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
 
 
 plt.figure()
 plt.plot(results.training_loss)
-#plt.plot(results.validation_loss)
+plt.plot(results.validation_loss)
 plt.legend([f"Value at last epoch: {results.training_loss.iloc[-1]:.4f}"], fontsize=12)
 plt.title("Training Loss 15 epochs", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/loss_15nomean.eps")
+#plt.savefig("../Figures/loss_15nomean.eps")
 plt.show()
 
 
@@ -28,7 +28,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/kl_15nomean.eps")
+#plt.savefig("../Figures/kl_15nomean.eps")
 plt.show()
 
 plt.figure()
@@ -39,7 +39,7 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("/Volumes/MNG/models/grad_1_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh15_mean/grad_15_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []

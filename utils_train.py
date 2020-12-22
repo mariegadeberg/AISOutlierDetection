@@ -37,7 +37,7 @@ def get_weights(w_dict, model):
     for name in w_dict:
         for n, p in model.named_parameters():
             if n == name:
-                w_ave = p.grad.trace()
+                w_ave = p.grad.trace().cpu()
                 w_dict[name].append(w_ave)
     return w_dict
 
