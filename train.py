@@ -99,13 +99,13 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         epoch_train_logpx = 0
         epoch_val_logpx = 0
 
-       # w_ave = {"phi_x.0.weight":[],
-       #          "phi_z.0.weight":[],
-       #          "prior.0.weight":[],
-       #          "encoder.0.weight":[],
-       #          "decoder.0.weight":[],
-       #          "rnn.weight_ih_l0":[],
-       #          "rnn.weight_hh_l0":[]}
+        w_ave = {"phi_x.0.weight":[],
+                 "phi_z.0.weight":[],
+                 "prior.0.weight":[],
+                 "encoder.0.weight":[],
+                 "decoder.0.weight":[],
+                 "rnn.weight_ih_l0":[],
+                 "rnn.weight_hh_l0":[]}
 
         #loss_plot = []
 
@@ -128,7 +128,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             #nn.utils.clip_grad_norm_(model.parameters(), max_norm=5, norm_type=2)
             optimizer.step()
             #plot_grad_flow(model.named_parameters())
-            #w_ave = get_weights(w_ave, model)
+            w_ave = get_weights(w_ave, model)
 
             if i % 200 == 0:
                 diagnostics_list.append(diagnostics)
@@ -195,16 +195,19 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 #plt.tight_layout()
 #plt.savefig(save_dir+"/gradient_bars.png")
 ##
-#legend = []
-#plt.figure()
-#for name in w_ave.keys():
-#    plt.plot(w_ave[name])
-#    legend.append([name])
-#plt.title("Average of gradients through small dataset")
-#plt.legend(legend)
-##plt.ylim(0, 2)
-#plt.savefig(save_dir+"/gradient_flow.png")
-##
+legend = []
+plt.figure()
+for name in w_ave.keys():
+    plt.plot(w_ave[name])
+    legend.append([name])
+plt.title("Trace of gradients through 1st epoch of training")
+plt.legend(legend)
+plt.xlabel("Steps")
+plt.ylabel("Parameter value")
+#plt.ylim(-1, 0.5)
+#plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
+plt.show()
+
 #plt.figure()
 #plt.plot(loss_plot)
 #plt.title("Training loss through small training set")
@@ -217,6 +220,9 @@ torch.save(model.state_dict(), save_dir+f"vrnn_{ROI}{num_epoch}_epochs.pt")
 
 with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(diagnostics_list, fp)
+
+with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
+    pickle.dump(w_ave, fp)
 
 
 

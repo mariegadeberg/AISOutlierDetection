@@ -2,23 +2,33 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small100KLann_BN/output_100bh.txt")
-results = pd.read_csv("/Volumes/MNG/models/output_16bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh15_nomean/output_15bh.txt")
+results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
 
 
 plt.figure()
 plt.plot(results.training_loss)
 #plt.plot(results.validation_loss)
-plt.legend([f"Value at last epoch: {results.training_loss.iloc[-1]:.4f}"])
-plt.title("Loss for Bornholm model for 100 epochs")
+plt.legend([f"Value at last epoch: {results.training_loss.iloc[-1]:.4f}"], fontsize=12)
+plt.title("Training Loss 15 epochs", fontsize=16)
+plt.xlabel("Epoch", fontsize=12)
+plt.ylabel("ELBO",  fontsize=12)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+plt.savefig("../Figures/loss_15nomean.eps")
 plt.show()
 
 
 plt.figure()
 plt.plot(results.training_kl)
 #plt.plot(results.validation_kl)
-plt.legend([f"Value at last epoch: {results.training_kl.iloc[-1]:.4f}"])
-plt.title("KL for Bornholm model for 100 epochs")
+plt.legend([f"Value at last epoch: {results.training_kl.iloc[-1]:.4f}"], fontsize=12)
+plt.title("KL divergence 15 epochs", fontsize=16)
+plt.xlabel("Epoch", fontsize=12)
+plt.ylabel("KL divergence", fontsize=12)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+plt.savefig("../Figures/kl_15nomean.eps")
 plt.show()
 
 plt.figure()
@@ -28,6 +38,27 @@ plt.legend([f"Value at last epoch: {results.training_logpx.iloc[-1]:.4f}"])
 plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
+
+with open("/Volumes/MNG/models/grad_1_bh.pcl", "rb") as f:
+    w_ave = pickle.load(f)
+
+legend = []
+plt.figure()
+for name in w_ave.keys():
+    plt.plot(w_ave[name])
+    legend.append([name])
+plt.title("Trace of gradients through 1st epoch of training",  fontsize=16)
+plt.legend(legend,  fontsize=12)
+plt.xlabel("Steps",  fontsize=12)
+plt.ylabel("Parameter value",  fontsize=12)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+#plt.show()
+plt.ylim(-1, 0.5)
+plt.savefig("../Figures/gradient_flow_no_mean_zoom.eps")
+
+
+
 
 with open("../HPCoutputs/models/bh_small100epoch/diagnostics_100_bh.pcl", "rb") as f:
     d2 = pickle.load(f)

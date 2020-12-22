@@ -71,13 +71,13 @@ class VRNN(nn.Module):
         #sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
         #log_sigma = torch.log(sigma)
 
-        #mu = mu + prior_mu
+        mu = mu + prior_mu
         #mu = self.bn(mu)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
-        px_logits = px_logits #+ self.mean_logits
+        px_logits = px_logits + self.mean_logits
         #px_logits = px_logits.view(-1, self.input_shape) + self.mean
         #print(self.mean)
         #print(px_logits.shape)

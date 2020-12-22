@@ -37,7 +37,7 @@ def get_weights(w_dict, model):
     for name in w_dict:
         for n, p in model.named_parameters():
             if n == name:
-                w_ave = p.grad.abs().mean()
+                w_ave = p.grad.trace()
                 w_dict[name].append(w_ave)
     return w_dict
 
@@ -45,6 +45,9 @@ def init_weights(m):
     if type(m) == nn.Linear:
         torch.nn.init.xavier_uniform_(m.weight)
         torch.nn.init.zeros_(m.bias)
+    if type(m) == nn.LSTM:
+        torch.nn.init.xavier_uniform_(m.weight_ih_l0)
+        torch.nn.init.xavier_uniform_(m.weight_hh_l0)
 
 
 '''
