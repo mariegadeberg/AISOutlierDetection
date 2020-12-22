@@ -2,14 +2,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh_small100_BN/output_100bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh_small100KLann_BN/output_100bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_16bh.txt")
 
 
 plt.figure()
 plt.plot(results.training_loss)
 #plt.plot(results.validation_loss)
-#plt.legend(["Traning loss", "Validation loss"])
+plt.legend([f"Value at last epoch: {results.training_loss.iloc[-1]:.4f}"])
 plt.title("Loss for Bornholm model for 100 epochs")
 plt.show()
 
@@ -17,15 +17,16 @@ plt.show()
 plt.figure()
 plt.plot(results.training_kl)
 #plt.plot(results.validation_kl)
-#plt.legend(["Traning kl", "Validation kl"])
+plt.legend([f"Value at last epoch: {results.training_kl.iloc[-1]:.4f}"])
 plt.title("KL for Bornholm model for 100 epochs")
 plt.show()
 
 plt.figure()
 plt.plot(results.training_logpx)
 #plt.plot(results.validation_logpx)
-#plt.legend(["Traning logpx", "Validation logpx"])
-plt.title("Logpx for Bornholm model for 100 epochs")
+plt.legend([f"Value at last epoch: {results.training_logpx.iloc[-1]:.4f}"])
+plt.title("Logits for Bornholm model for 100 epochs")
+#plt.ylim(-0.001, 0.01)
 plt.show()
 
 with open("../HPCoutputs/models/bh_small100epoch/diagnostics_100_bh.pcl", "rb") as f:
