@@ -47,6 +47,6 @@ python AISOutlierDetection/train.py \
       --train "train_bh_.pcl" \
       --val "val_bh_.pcl" \
       --ROI "bh" \
-      --batchsize 32
-      --warm_up 10
+      --batchsize 32 \
+      --warm_up 10 \
       --gamma 0.6
