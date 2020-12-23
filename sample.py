@@ -6,7 +6,7 @@ from Config import *
 from model import VRNN
 from utils_preprocess import AISDataset, TruncCollate, prep_mean
 
-state_dict = torch.load("../HPCoutputs/models/bh15_mean/vrnn_bh15_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("../HPCoutputs/models/bh30_mean/vrnn_bh30_epochs.pt", map_location=torch.device('cpu'))
 state_dict = torch.load("/Volumes/MNG/models/vrnn_bh16_epochs.pt", map_location=torch.device('cpu'))
 
 
@@ -34,7 +34,7 @@ breaks = Config.breaks["bh"]
 
 
 plt.figure()
-for k in range(0,32):
+for k in range(0,4):
     lat_out = []
     long_out = []
     for i in range(len(diagnostics["log_px"])):
@@ -47,7 +47,7 @@ for k in range(0,32):
     #print(f"Average Latitude: {np.mean(lat_out)}")
     #print(f"Average Longitude: {np.mean(long_out)}")
     plt.plot(long_out, lat_out, ".-")
-plt.title("Trajectory reconstruction for model trained \n 16 epochs subtracted mean logits")
+#plt.title("Trajectory reconstruction for model trained \n 16 epochs subtracted mean logits")
 plt.show()
 
 plt.figure()
