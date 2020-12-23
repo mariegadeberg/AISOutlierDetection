@@ -49,4 +49,4 @@ python AISOutlierDetection/train.py \
       --ROI "bh" \
       --batchsize 32 \
       --warm_up 10 \
-      --gamma 0.6
+      --gamma 0.3
