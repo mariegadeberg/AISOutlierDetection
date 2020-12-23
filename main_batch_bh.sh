@@ -48,3 +48,4 @@ python AISOutlierDetection/train.py \
       --val "val_bh_.pcl" \
       --ROI "bh" \
       --batchsize 32
+      --warm_up 10
