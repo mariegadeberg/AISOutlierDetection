@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh30_mean/output_30bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh30_klannBN/output_30bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
 
 
@@ -15,7 +15,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/loss_30mean.eps")
+#plt.savefig("../Figures/loss_30mean.eps")
 plt.show()
 
 
@@ -28,7 +28,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/kl_30mean.eps")
+#plt.savefig("../Figures/kl_30mean.eps")
 plt.show()
 
 plt.figure()

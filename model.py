@@ -15,7 +15,7 @@ from torch.autograd import Variable
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, mean_logits, mean_,splits, len_data):
+    def __init__(self, input_shape, latent_shape, mean_logits, mean_,splits, len_data, gamma):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
@@ -23,6 +23,7 @@ class VRNN(nn.Module):
         self.mean_ = torch.tensor(mean_, dtype=torch.float)
         self.splits = splits
         self.len_data = len_data
+        self.gamma = gamma
 
         self.phi_x = nn.Sequential(nn.Linear(self.input_shape, self.latent_shape),
                                    nn.ReLU())
@@ -48,7 +49,7 @@ class VRNN(nn.Module):
 
         self.bn = nn.BatchNorm1d(self.latent_shape)
         self.bn.weight.requires_grad = False
-        self.bn.weight.fill_(1)
+        self.bn.weight.fill_(self.gamma)
 
     def _prior(self, h, sigma_min=0.0, raw_sigma_bias=0.5):
         hidden = self.prior(h)
