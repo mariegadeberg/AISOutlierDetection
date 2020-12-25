@@ -6,8 +6,8 @@ from Config import *
 from model import VRNN
 from utils_preprocess import AISDataset, TruncCollate, prep_mean
 
-state_dict = torch.load("../HPCoutputs/models/bh30_klannBN/vrnn_bh30_epochs.pt", map_location=torch.device('cpu'))
-state_dict = torch.load("/Volumes/MNG/models/vrnn_bh16_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("../HPCoutputs/models/bh30_klannBN.6/vrnn_bh30_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("/Volumes/MNG/models/vrnn_bh15_epochs.pt", map_location=torch.device('cpu'))
 
 
 
@@ -19,7 +19,7 @@ mean_logits = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
 train_ds = AISDataset("/Volumes/MNG/data/Small/train_bh_small.pcl", "/Volumes/MNG/data/mean_bh.pcl")
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True, collate_fn=TruncCollate())
 
-model = VRNN(Config.input_shape["bh"], Config.latent_shape, mean_logits,mean_, Config.splits["bh"], len(train_loader))
+model = VRNN(Config.input_shape["bh"], Config.latent_shape, mean_logits,mean_, Config.splits["bh"], len(train_loader), gamma=0.6)
 model.load_state_dict(state_dict)
 
 it = iter(train_loader)
@@ -46,8 +46,10 @@ for k in range(0,32):
     #print(max(lat))
     #print(f"Average Latitude: {np.mean(lat_out)}")
     #print(f"Average Longitude: {np.mean(long_out)}")
-    plt.plot(long_out, lat_out, ".-")
+    plt.plot(long_out, lat_out, ".-", alpha=0.2)
 #plt.title("Trajectory reconstruction for model trained \n 16 epochs subtracted mean logits")
+plt.xlim(Config.ROI_boundary_long, Config.long_max)
+plt.ylim(Config.lat_min, Config.ROI_boundary_lat)
 plt.show()
 
 plt.figure()
@@ -68,6 +70,34 @@ plt.show()
 
 
 lat, long, sog, cog = np.split(mean_.numpy()[-1], breaks)
+
+X, Y = np.meshgrid(long_cols, lat_cols)
+Z = np.concatenate([long, lat]).reshape(len(long_cols), len(lat_cols))
+
+
+lat1 = np.array([lat])
+long1 = np.array([long])[::-1]
+tst = long1.transpose().dot(lat1)
+
+tt = pd.DataFrame(tst.transpose(), index=lat_cols[::-1], columns=long_cols)
+
+import seaborn as sns
+from matplotlib.ticker import MultipleLocator
+fig, ax = plt.subplots()
+sns.heatmap(tt, cmap="RdPu")
+plt.xticks(ticks=np.arange(0, len(long_cols)+1, 50.25), labels=np.arange(min(long_cols), max(long_cols), 0.5))
+plt.yticks(ticks=np.arange(0, len(lat_cols)+1, 25.25), labels=np.arange(min(lat_cols), max(lat_cols)+0.25, 0.25)[::-1])
+plt.show()
+
+plt.figure()
+plt.pcolormesh(X, Y, tst)
+plt.show()
+
+tst = pd.DataFrame(data={"long": long_cols, "lat": lat, "intensity":[long, lat]})
+
+plt.figure()
+plt.imshow([long + lat], cmap="hot", interpolation="nearest")
+plt.show()
 
 plt.figure()
 plt.plot(mean_.numpy()[-1])

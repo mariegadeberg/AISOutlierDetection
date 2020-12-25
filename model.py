@@ -12,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from functools import reduce
 from torch.autograd import Variable
+import math
 
 class VRNN(nn.Module):
 
@@ -47,9 +48,9 @@ class VRNN(nn.Module):
         self.register_buffer('h', torch.zeros(1, self.latent_shape))
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
-        self.bn = nn.BatchNorm1d(self.latent_shape)
-        self.bn.weight.requires_grad = False
-        self.bn.weight.fill_(self.gamma)
+        #self.bn = nn.BatchNorm1d(self.latent_shape)
+        #self.bn.weight.requires_grad = False
+        #self.bn.weight.fill_(self.gamma)
 
     def _prior(self, h, sigma_min=0.0, raw_sigma_bias=0.5):
         hidden = self.prior(h)
@@ -74,7 +75,7 @@ class VRNN(nn.Module):
         #log_sigma = torch.log(sigma)
 
         mu = mu + prior_mu
-        mu = self.bn(mu)
+        #mu = self.bn(mu)
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
@@ -104,6 +105,10 @@ class VRNN(nn.Module):
                        (qz.sigma**2 + (qz.mu - pz.mu)**2) /
                        pz.sigma**2 - 1)
         return 0.5 * torch.sum(kld_element)
+
+    #def calc_mi(self, x, h, prior_mu):
+     #   qzp = self.posterior(h, x, prior_mu=)
+
 
 
 
@@ -190,6 +195,67 @@ class VRNN(nn.Module):
                            "mu_post": torch.stack(mu_post).cpu().numpy()}
 
         return -torch.mean(acc_loss/inputs.size(1)), diagnostics
+
+    def calc_mi(self, inputs):
+
+        batch_size = inputs.size(0)
+
+        out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
+        h = self.h.expand(1, batch_size, self.c.shape[-1]).contiguous()
+        c = self.c.expand(1, batch_size, self.c.shape[-1]).contiguous()
+
+        neg_entropy = 0
+        log_qz = 0
+
+        for t in range(inputs.size(1)):
+            x = inputs[:, t, :]
+            x_hat = self.phi_x(x)
+
+            # Create prior distribution
+            pz = self._prior(out)
+
+            # Create approximate posterior
+            qz = self.posterior(out, x_hat, prior_mu=pz.mu)
+
+            mu = qz.mu
+            logsigma = torch.log(qz.sigma)
+
+            z = qz.rsample()
+            z_hat = self.phi_z(z)
+
+            rnn_input = torch.cat([x_hat, z_hat], dim=1)
+            rnn_input = rnn_input.unsqueeze(1)
+            out, (h, c) = self.rnn(rnn_input, (h, c))
+            out = out.squeeze()
+
+            neg_entropy += (-0.5 * self.latent_shape * math.log(2 * math.pi) - 0.5 * (1 + 2 * logsigma).sum(-1)).mean()
+
+            var = logsigma.exp()**2
+
+            z = z.unsqueeze(1)
+            mu = mu.unsqueeze(0)
+            logsigma = logsigma.unsqueeze(0)
+
+            dev = z - mu
+
+            log_density = -0.5 * ((dev ** 2 ) / var).sum(dim=-1) - 0.5 * (self.latent_shape * math.log(2 * math.pi) + (2*logsigma).sum(dim=-1))
+
+            log_qz1 = torch.logsumexp(log_density, dim=1) - math.log(batch_size)
+            log_qz += log_qz1.mean(-1)
+
+        mi = (neg_entropy / inputs.size(1)) - (log_qz / inputs.size(1))
+
+        return mi
+
+
+
+
+
+
+
+
+
+
 
 
 class ReparameterizedDiagonalGaussian(Distribution):

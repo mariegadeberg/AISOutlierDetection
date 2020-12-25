@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh30_klannBN/output_30bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh30_mean/output_30bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
 
 
@@ -39,12 +39,14 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("../HPCoutputs/models/bh30_mean/grad_30_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh30_klannBN.3/grad_30_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
 plt.figure()
 for name in w_ave.keys():
+    #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
+    #    continue
     plt.plot(w_ave[name])
     legend.append([name])
 plt.title("Trace of gradients through 1st epoch of training",  fontsize=16)
@@ -53,7 +55,7 @@ plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.ylim(-1, 0.5)
+#plt.ylim(-0.3, 0.1)
 plt.show()
 #plt.savefig("../Figures/gradient_flow_no_mean_zoom.eps")
 

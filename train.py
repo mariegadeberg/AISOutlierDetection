@@ -85,7 +85,7 @@ else:
 anneal_rate = (1.0 - args.kl_start) / (args.warm_up * (len(train_ds) / batchsize))
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
-    header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]
+    header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
 
@@ -152,6 +152,8 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         model.eval()
 
         with torch.no_grad():
+            num_examples = 0
+            mi = 0
             for inputs in val_loader:
                 inputs = inputs.to(device)
 
@@ -161,6 +163,12 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                 epoch_val_logpx += np.mean(diagnostics["log_px"])
 
                 epoch_val_loss += loss.item()
+
+                num_examples += inputs.size(0)
+                mutual_info = model.calc_mi(inputs)
+                mi += mutual_info * inputs.size(0)
+
+            mi = mi / num_examples
 
             print("Validation done")
             writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
@@ -181,13 +189,15 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             print(f'Epoch {epoch}, training loss: {training_loss:.4f}, validation loss: {val_loss:.4f}')
             print(f'Epoch {epoch}, training KL: {training_kl:.4f}, validation KL: {val_kl:.4f}')
             print(f'Epoch {epoch}, training log_px: {training_logpx:.4f}, validation log_px: {val_logpx:.4f}')
+            print(f'Mutual information: {mi}')
 
         csv_writer.writerow({"training_loss": training_loss,
                              "validation_loss": val_loss,
                              "training_kl": training_kl,
                              "validation_kl": val_kl,
                              "training_logpx": training_logpx,
-                             "validation_logpx": val_logpx})
+                             "validation_logpx": val_logpx,
+                             "mi": mi})
 
         output_file.flush()
         writer.flush()
@@ -197,18 +207,18 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 #plt.tight_layout()
 #plt.savefig(save_dir+"/gradient_bars.png")
 ##
-legend = []
-plt.figure()
-for name in w_ave.keys():
-    plt.plot(w_ave[name])
-    legend.append([name])
-plt.title("Trace of gradients through 1st epoch of training")
-plt.legend(legend)
-plt.xlabel("Steps")
-plt.ylabel("Parameter value")
-#plt.ylim(-1, 0.5)
-#plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
-plt.show()
+#legend = []
+#plt.figure()
+#for name in w_ave.keys():
+#    plt.plot(w_ave[name])
+#    legend.append([name])
+#plt.title("Trace of gradients through 1st epoch of training")
+#plt.legend(legend)
+#plt.xlabel("Steps")
+#plt.ylabel("Parameter value")
+##plt.ylim(-1, 0.5)
+##plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
+#plt.show()
 
 #plt.figure()
 #plt.plot(loss_plot)
