@@ -189,7 +189,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             print(f'Epoch {epoch}, training loss: {training_loss:.4f}, validation loss: {val_loss:.4f}')
             print(f'Epoch {epoch}, training KL: {training_kl:.4f}, validation KL: {val_kl:.4f}')
             print(f'Epoch {epoch}, training log_px: {training_logpx:.4f}, validation log_px: {val_logpx:.4f}')
-            print(f'Mutual information: {mi}')
+            print(f'Mutual information: {mi.cpu().numpy()}')
 
         csv_writer.writerow({"training_loss": training_loss,
                              "validation_loss": val_loss,
@@ -197,7 +197,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                              "validation_kl": val_kl,
                              "training_logpx": training_logpx,
                              "validation_logpx": val_logpx,
-                             "mi": mi})
+                             "mi": mi.cpu().numpy()})
 
         output_file.flush()
         writer.flush()
