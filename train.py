@@ -169,7 +169,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                 mi += mutual_info * inputs.size(0)
 
             mi = mi / num_examples
-            au, _ = calc_au(model, val_loader)
+            au, _ = calc_au(model, val_loader, device)
 
             print("Validation done")
             print(f'Mutual information: {mi.cpu().numpy()}')

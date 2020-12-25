@@ -50,10 +50,11 @@ def init_weights(m):
         torch.nn.init.xavier_uniform_(m.weight_hh_l0)
 
 
-def calc_au(model, test_data_batch, delta=0.01):
+def calc_au(model, test_data_batch, device, delta=0.01):
     cnt = 0
 
     for batch_data in test_data_batch:
+        batch_data = batch_data.to(device)
         mean = model.encode_stats(batch_data)
         if cnt == 0:
             means_sum = mean.sum(dim=0, keepdim=True)
@@ -66,6 +67,7 @@ def calc_au(model, test_data_batch, delta=0.01):
 
     cnt = 0
     for batch_data in test_data_batch:
+        batch_data = batch_data.to(device)
         mean = model.encode_stats(batch_data)
         if cnt == 0:
             var_sum = ((mean - mean_mean) ** 2).sum(dim=0)
