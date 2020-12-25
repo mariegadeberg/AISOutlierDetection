@@ -50,6 +50,35 @@ def init_weights(m):
         torch.nn.init.xavier_uniform_(m.weight_hh_l0)
 
 
+def calc_au(model, test_data_batch, delta=0.01):
+    cnt = 0
+
+    for batch_data in test_data_batch:
+        mean = model.encode_stats(batch_data)
+        if cnt == 0:
+            means_sum = mean.sum(dim=0, keepdim=True)
+        else:
+            means_sum = means_sum + mean.sum(dim=0, keepdim=True)
+        cnt += mean.size(0)
+
+    # (1, nz)
+    mean_mean = means_sum / cnt
+
+    cnt = 0
+    for batch_data in test_data_batch:
+        mean = model.encode_stats(batch_data)
+        if cnt == 0:
+            var_sum = ((mean - mean_mean) ** 2).sum(dim=0)
+        else:
+            var_sum = var_sum + ((mean - mean_mean) ** 2).sum(dim=0)
+        cnt += mean.size(0)
+
+    # (nz)
+    au_var = var_sum / (cnt - 1)
+
+    return (au_var >= delta).sum().item(), au_var
+
+
 '''
 def test_func(w_dict, named_parameters, i):
     for name in w_dict.keys():

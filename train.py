@@ -169,8 +169,12 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                 mi += mutual_info * inputs.size(0)
 
             mi = mi / num_examples
+            au, _ = calc_au(model, val_loader)
 
             print("Validation done")
+            print(f'Mutual information: {mi.cpu().numpy()}')
+            print(f"Active Units: {au}")
+
             writer.add_scalar("Loss/validation", epoch_val_loss, epoch)
             writer.add_scalar("KL/validation", epoch_val_kl, epoch)
             writer.add_scalar("Log_px/validation", epoch_val_logpx, epoch)
@@ -189,7 +193,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             print(f'Epoch {epoch}, training loss: {training_loss:.4f}, validation loss: {val_loss:.4f}')
             print(f'Epoch {epoch}, training KL: {training_kl:.4f}, validation KL: {val_kl:.4f}')
             print(f'Epoch {epoch}, training log_px: {training_logpx:.4f}, validation log_px: {val_logpx:.4f}')
-            print(f'Mutual information: {mi.cpu().numpy()}')
+
 
         csv_writer.writerow({"training_loss": training_loss,
                              "validation_loss": val_loss,

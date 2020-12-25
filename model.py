@@ -164,8 +164,8 @@ class VRNN(nn.Module):
             log_pz = pz.log_prob(z).sum(dim=1)
             log_qz = qz.log_prob(z).sum(dim=1)
 
-            kl = log_qz - log_pz
-            #kl = self.get_kl_analytic(qz, pz)
+            #kl = log_qz - log_pz
+            kl = self.get_kl_analytic(qz, pz)
             #log_px_bce = self.get_bce(px.log_prob(x), x)
             #elbo_beta = log_px_bce - self.beta * kl.mean()
 
@@ -246,6 +246,37 @@ class VRNN(nn.Module):
         mi = (neg_entropy / inputs.size(1)) - (log_qz / inputs.size(1))
 
         return mi
+
+    def encode_stats(self, inputs):
+        batch_size = inputs.size(0)
+
+        out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
+        h = self.h.expand(1, batch_size, self.c.shape[-1]).contiguous()
+        c = self.c.expand(1, batch_size, self.c.shape[-1]).contiguous()
+
+        mu = torch.zeros(batch_size, self.latent_shape)
+
+        for t in range(inputs.size(1)):
+            x = inputs[:, t, :]
+            x_hat = self.phi_x(x)
+
+            # Create prior distribution
+            pz = self._prior(out)
+
+            # Create approximate posterior
+            qz = self.posterior(out, x_hat, prior_mu=pz.mu)
+
+            mu += qz.mu
+
+            z = qz.rsample()
+            z_hat = self.phi_z(z)
+
+            rnn_input = torch.cat([x_hat, z_hat], dim=1)
+            rnn_input = rnn_input.unsqueeze(1)
+            out, (h, c) = self.rnn(rnn_input, (h, c))
+            out = out.squeeze()
+
+        return mu / inputs.size(1)
 
 
 
