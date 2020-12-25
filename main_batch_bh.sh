@@ -43,10 +43,10 @@
 
 # run program
 python AISOutlierDetection/train.py \
-      --num_epoch 15 \
+      --num_epoch 30 \
       --train "train_bh_.pcl" \
       --val "val_bh_.pcl" \
       --ROI "bh" \
-      --batchsize 32
-      --warm_up 10
-      --gamma 0.6
+      --batchsize 32 \
+      --warm_up 10 \
+      --gamma 0.3
