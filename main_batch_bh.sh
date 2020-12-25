@@ -43,7 +43,7 @@
 
 # run program
 python AISOutlierDetection/train.py \
-      --num_epoch 50 \
+      --num_epoch 30 \
       --train "train_bh_.pcl" \
       --val "val_bh_.pcl" \
       --ROI "bh" \
