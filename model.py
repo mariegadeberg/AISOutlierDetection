@@ -21,7 +21,7 @@ class VRNN(nn.Module):
         self.input_shape = input_shape
         self.latent_shape = latent_shape
         self.mean_logits = mean_logits
-        self.mean_ = torch.tensor(mean_, dtype=torch.float)
+        self.mean_ = mean_
         self.splits = splits
         self.len_data = len_data
         self.gamma = gamma

@@ -54,7 +54,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
 with open(mean_path, "rb") as f:
-    mean_ = torch.tensor(pickle.load(f))
+    mean_ = torch.tensor(pickle.load(f), dtype=torch.float)
 mean_ = mean_.to(device)
 
 mean_logits = prep_mean(mean_path)
