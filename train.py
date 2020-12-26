@@ -85,7 +85,7 @@ else:
 anneal_rate = (1.0 - args.kl_start) / (args.warm_up * (len(train_ds) / batchsize))
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
-    header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi"]
+    header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
 
@@ -201,7 +201,8 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                              "validation_kl": val_kl,
                              "training_logpx": training_logpx,
                              "validation_logpx": val_logpx,
-                             "mi": mi.cpu().numpy()})
+                             "mi": mi.cpu().numpy(),
+                             "au": au.cpu().numpy()})
 
         output_file.flush()
         writer.flush()

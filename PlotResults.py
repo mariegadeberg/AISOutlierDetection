@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh50_meanMI/output_50bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh30_meanMI/output_30bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
 
 
@@ -36,6 +36,18 @@ plt.plot(results.mi)
 #plt.plot(results.validation_kl)
 plt.legend([f"Value at last epoch: {results.mi.iloc[-1]:.4f}"], fontsize=12)
 plt.title("Mutual information 30 epochs", fontsize=16)
+plt.xlabel("Epoch", fontsize=12)
+plt.ylabel("Mutual Information", fontsize=12)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+#plt.savefig("../Figures/kl_30mean.eps")
+plt.show()
+
+plt.figure()
+plt.plot(results.au)
+#plt.plot(results.validation_kl)
+plt.legend([f"Value at last epoch: {results.au.iloc[-1]:.4f}"], fontsize=12)
+plt.title("Active Units 30 epochs", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("Mutual Information", fontsize=12)
 plt.xticks(fontsize=12)

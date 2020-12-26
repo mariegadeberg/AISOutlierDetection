@@ -16,7 +16,7 @@ import math
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, mean_logits, mean_,splits, len_data, gamma):
+    def __init__(self, input_shape, latent_shape, mean_logits, mean_, splits, len_data, gamma):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
@@ -164,8 +164,8 @@ class VRNN(nn.Module):
             log_pz = pz.log_prob(z).sum(dim=1)
             log_qz = qz.log_prob(z).sum(dim=1)
 
-            #kl = log_qz - log_pz
-            kl = self.get_kl_analytic(qz, pz)
+            kl = log_qz - log_pz
+            #kl = self.get_kl_analytic(qz, pz)
             #log_px_bce = self.get_bce(px.log_prob(x), x)
             #elbo_beta = log_px_bce - self.beta * kl.mean()
 
