@@ -202,7 +202,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                              "training_logpx": training_logpx,
                              "validation_logpx": val_logpx,
                              "mi": mi.cpu().numpy(),
-                             "au": au.cpu().numpy()})
+                             "au": au})
 
         output_file.flush()
         writer.flush()
