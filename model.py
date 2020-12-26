@@ -266,7 +266,7 @@ class VRNN(nn.Module):
             # Create approximate posterior
             qz = self.posterior(out, x_hat, prior_mu=pz.mu)
 
-            mu += qz.mu
+            mu += qz.mu.cpu().numpy()
 
             z = qz.rsample()
             z_hat = self.phi_z(z)
