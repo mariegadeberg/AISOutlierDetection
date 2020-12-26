@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh50_meanMI/output_50bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6/output_50bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
 
 
@@ -64,7 +64,7 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("../HPCoutputs/models/bh50_meanMI/grad_50_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh50_klannBN.6/grad_50_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
