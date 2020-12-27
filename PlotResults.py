@@ -40,6 +40,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("Mutual Information", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
+plt.ylim(-0.1, 0.5)
 #plt.savefig("../Figures/kl_30mean.eps")
 plt.show()
 
@@ -69,10 +70,10 @@ with open("../HPCoutputs/models/bh15_nomean/grad_15_bh.pcl", "rb") as f:
 
 legend = []
 plt.figure()
-for name in w_ave.keys():
+for name in w_ave[14].keys():
     #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
     #    continue
-    plt.plot(w_ave[name])
+    plt.plot(w_ave[14][name])
     legend.append([name])
 plt.title("Trace of gradients through 1st epoch of training",  fontsize=16)
 plt.legend(legend,  fontsize=12)
@@ -80,11 +81,13 @@ plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.ylim(-0.3, 0.1)
+plt.ylim(-0.2, 0.2)
 plt.show()
 #plt.savefig("../Figures/gradient_flow_no_mean_zoom.eps")
 
-
+plt.figure()
+plt.plot(correlate(w_ave[14]['prior.0.weight'], w_ave[14]['encoder.0.weight']))
+plt.show()
 
 
 with open("../HPCoutputs/models/bh_small100epoch/diagnostics_100_bh.pcl", "rb") as f:
