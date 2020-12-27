@@ -56,10 +56,10 @@ class VRNN(nn.Module):
         hidden = self.prior(h)
         mu, log_sigma = hidden.chunk(2, dim=-1)
 
-        #sigma = log_sigma.exp()
-        #sigma_min = torch.full_like(sigma, sigma_min)
-        #sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
-        #log_sigma = torch.log(sigma)
+        sigma = log_sigma.exp()
+        sigma_min = torch.full_like(sigma, sigma_min)
+        sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
+        log_sigma = torch.log(sigma)
 
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
@@ -69,10 +69,10 @@ class VRNN(nn.Module):
         #hidden = hidden.unsqueeze(1)
         mu, log_sigma = hidden.chunk(2, dim=-1)
 
-        #sigma = log_sigma.exp()
-        #sigma_min = torch.full_like(sigma, sigma_min)
-        #sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
-        #log_sigma = torch.log(sigma)
+        sigma = log_sigma.exp()
+        sigma_min = torch.full_like(sigma, sigma_min)
+        sigma = torch.maximum(torch.nn.functional.softplus(sigma + raw_sigma_bias), sigma_min)
+        log_sigma = torch.log(sigma)
 
         mu = mu + prior_mu
         #mu = self.bn(mu)

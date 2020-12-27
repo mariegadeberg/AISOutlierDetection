@@ -2,15 +2,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh15_nomean/output_15bh.txt")
-results = pd.read_csv("/Volumes/MNG/models/output_15bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh30_mean/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_meanklann/output_30bh.txt")
 
 
 plt.figure()
 plt.plot(results.training_loss)
 #plt.plot(results.validation_loss)
 plt.legend([f"Value at last epoch: {results.training_loss.iloc[-1]:.4f}"], fontsize=12)
-plt.title("Training Loss 30 epochs", fontsize=16)
+plt.title("Training Loss", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
@@ -23,7 +23,7 @@ plt.figure()
 plt.plot(results.training_kl)
 #plt.plot(results.validation_kl)
 plt.legend([f"Value at last epoch: {results.training_kl.iloc[-1]:.4f}"], fontsize=12)
-plt.title("KL divergence 30 epochs", fontsize=16)
+plt.title("KL divergence", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
@@ -35,25 +35,25 @@ plt.figure()
 plt.plot(results.mi)
 #plt.plot(results.validation_kl)
 plt.legend([f"Value at last epoch: {results.mi.iloc[-1]:.4f}"], fontsize=12)
-plt.title("Mutual information 30 epochs", fontsize=16)
+plt.title("Mutual information", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("Mutual Information", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.ylim(-0.1, 0.5)
-#plt.savefig("../Figures/kl_30mean.eps")
+#plt.ylim(-0.1, 0.5)
+#plt.savefig("../Figures/MI_30mean.eps")
 plt.show()
 
 plt.figure()
 plt.plot(results.au)
 #plt.plot(results.validation_kl)
-plt.legend([f"Value at last epoch: {results.au.iloc[-1]:.4f}"], fontsize=12)
-plt.title("Active Units 30 epochs", fontsize=16)
+plt.legend([f"Value at last epoch: {results.au.iloc[-1]}"], fontsize=12)
+plt.title("Active Units", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
-plt.ylabel("Mutual Information", fontsize=12)
+plt.ylabel("Active Units", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.savefig("../Figures/kl_30mean.eps")
+plt.savefig("../Figures/au_30mean.eps")
 plt.show()
 
 
@@ -65,23 +65,23 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("../HPCoutputs/models/bh15_nomean/grad_15_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh30_meanMI/grad_30_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
 plt.figure()
-for name in w_ave[14].keys():
+for name in w_ave.keys():
     #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
     #    continue
-    plt.plot(w_ave[14][name])
+    plt.plot(w_ave[name])
     legend.append([name])
-plt.title("Trace of gradients through 1st epoch of training",  fontsize=16)
+plt.title("Trace of gradients through last epoch of training",  fontsize=16)
 plt.legend(legend,  fontsize=12)
 plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.ylim(-0.2, 0.2)
+#plt.ylim(-0.2, 0.2)
 plt.show()
 #plt.savefig("../Figures/gradient_flow_no_mean_zoom.eps")
 
