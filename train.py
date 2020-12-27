@@ -83,6 +83,7 @@ else:
     kl_weight = 1
 
 anneal_rate = (1.0 - args.kl_start) / (args.warm_up * (len(train_ds) / batchsize))
+grads = []
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
@@ -207,6 +208,8 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         output_file.flush()
         writer.flush()
 
+        grads.append(w_ave)
+
         epoch += 1
 
 #plt.tight_layout()
@@ -239,7 +242,7 @@ with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(diagnostics_list, fp)
 
 with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
-    pickle.dump(w_ave, fp)
+    pickle.dump(grads, fp)
 
 
 
