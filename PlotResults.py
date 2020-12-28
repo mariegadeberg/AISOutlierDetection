@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6/output_50bh.txt")
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_meanklann/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_klannBN.6/output_30bh.txt")
 
 
 plt.figure()
@@ -15,7 +15,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/loss_30BN.eps")
+#plt.savefig("../Figures/loss_30BN.eps")
 plt.show()
 
 
@@ -28,7 +28,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/kl_30BN.eps")
+#plt.savefig("../Figures/kl_30BN.eps")
 plt.show()
 
 plt.figure()
@@ -65,7 +65,7 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("../HPCoutputs/models/bh30_meanMI/grad_30_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh30_klannBN.6/grad_30_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []

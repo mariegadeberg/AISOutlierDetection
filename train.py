@@ -208,7 +208,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         output_file.flush()
         writer.flush()
 
-        grads.append(w_ave)
+        grads.append(w_ave.copy())
 
         epoch += 1
 
