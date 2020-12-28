@@ -128,7 +128,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             loss.backward()
             #for n, p in model.named_parameters():
             #    if "decoder" not in n:
-            nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
+            #nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
             optimizer.step()
             #plot_grad_flow(model.named_parameters())
             w_ave = get_weights(w_ave, model)
