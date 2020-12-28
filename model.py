@@ -82,9 +82,6 @@ class VRNN(nn.Module):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
         px_logits = px_logits + self.mean_logits
         #px_logits = px_logits.view(-1, self.input_shape) + self.mean
-        #print(self.mean)
-        #print(px_logits.shape)
-        #k+=1
         return Bernoulli(logits=px_logits)
 
     def get_bce(self, log_px, x):
@@ -94,9 +91,6 @@ class VRNN(nn.Module):
         for log_px, x in zip(log_px_splits, x_splits):
             loss.append(binary_cross_entropy_with_logits(log_px, x, reduction='sum'))
 
-        #print(loss.shape)
-        #bce = torch.cat(loss, dim=1)
-        #bce.sum(dim=1)
         bce = torch.stack(loss).sum() / x.size(0)
         return bce
 
@@ -105,12 +99,6 @@ class VRNN(nn.Module):
                        (qz.sigma**2 + (qz.mu - pz.mu)**2) /
                        pz.sigma**2 - 1)
         return 0.5 * torch.sum(kld_element)
-
-    #def calc_mi(self, x, h, prior_mu):
-     #   qzp = self.posterior(h, x, prior_mu=)
-
-
-
 
     def forward(self, inputs, beta):
 
