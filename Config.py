@@ -71,7 +71,8 @@ class Config(object):
     input_shape = {"bh": len(sog_columns) + len(cog_columns) + len(lat_columns["bh"]) + len(long_columns["bh"]),
                    "sk": len(sog_columns) + len(cog_columns) + len(lat_columns["sk"]) + len(long_columns["sk"]),
                    "blt": len(sog_columns) + len(cog_columns) + len(lat_columns["blt"]) + len(long_columns["blt"])}
-    latent_shape = 100
+
+    latent_shape = 200
 
     lr = 0.0003
 

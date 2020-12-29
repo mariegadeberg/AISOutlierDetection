@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
-results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6/output_50bh.txt")
+results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
 results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_klannBN.6/output_30bh.txt")
 
 
@@ -41,7 +41,7 @@ plt.ylabel("Mutual Information", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
 #plt.ylim(-0.1, 0.5)
-#plt.savefig("../Figures/MI_30mean.eps")
+#plt.savefig("../Figures/MI_30BN.eps")
 plt.show()
 
 plt.figure()
@@ -53,7 +53,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("Active Units", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.savefig("../Figures/au_30mean.eps")
+#plt.savefig("../Figures/au_30BN.eps")
 plt.show()
 
 
@@ -65,7 +65,7 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("../HPCoutputs/models/bh30_klannBN.6/grad_30_bh.pcl", "rb") as f:
+with open("../HPCoutputs/models/bh50_klannBN.6clip5/grad_50_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
@@ -75,15 +75,15 @@ for name in w_ave.keys():
     #    continue
     plt.plot(w_ave[name])
     legend.append([name])
-plt.title("Trace of gradients through last epoch of training",  fontsize=16)
-plt.legend(legend,  fontsize=12)
+plt.title("Trace of gradients through first epoch of training",  fontsize=16)
+plt.legend(legend,  fontsize=10)
 plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.ylim(-0.2, 0.2)
+plt.ylim(-0.04, 0.08)
+#plt.savefig("../Figures/gradient_flow_BNfirst.eps")
 plt.show()
-#plt.savefig("../Figures/gradient_flow_no_mean_zoom.eps")
 
 plt.figure()
 plt.plot(correlate(w_ave[14]['prior.0.weight'], w_ave[14]['encoder.0.weight']))
