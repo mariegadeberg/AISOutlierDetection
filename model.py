@@ -182,7 +182,11 @@ class VRNN(nn.Module):
                            "mu_prior": torch.stack(mu_prior).cpu().numpy(),
                            "mu_post": torch.stack(mu_post).cpu().numpy()}
 
-        return -torch.mean(acc_loss/inputs.size(1)), diagnostics
+
+        mi = self.calc_mi(inputs)
+        loss = torch.mean(acc_loss/inputs.size(1)) + mi
+
+        return -loss, diagnostics
 
     def calc_mi(self, inputs):
 

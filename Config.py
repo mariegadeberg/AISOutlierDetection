@@ -72,7 +72,7 @@ class Config(object):
                    "sk": len(sog_columns) + len(cog_columns) + len(lat_columns["sk"]) + len(long_columns["sk"]),
                    "blt": len(sog_columns) + len(cog_columns) + len(lat_columns["blt"]) + len(long_columns["blt"])}
 
-    latent_shape = 200
+    latent_shape = 100
 
     lr = 0.0003
 
