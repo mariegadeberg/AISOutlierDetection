@@ -16,7 +16,7 @@ import math
 
 class VRNN(nn.Module):
 
-    def __init__(self, input_shape, latent_shape, mean_logits, mean_, splits, len_data, gamma):
+    def __init__(self, input_shape, latent_shape, mean_logits, mean_, splits, len_data, gamma, bn_switch):
         super(VRNN, self).__init__()
         self.input_shape = input_shape
         self.latent_shape = latent_shape
@@ -25,6 +25,7 @@ class VRNN(nn.Module):
         self.splits = splits
         self.len_data = len_data
         self.gamma = gamma
+        self.bn_switch = bn_switch
 
         self.phi_x = nn.Sequential(nn.Linear(self.input_shape, self.latent_shape),
                                    nn.ReLU())
@@ -43,14 +44,17 @@ class VRNN(nn.Module):
                                      nn.ReLU())
 
         self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape, batch_first=True)
+        torch.nn.init.xavier_uniform_(self.rnn.weight_hh_l0)
+        torch.nn.init.xavier_uniform_(self.rnn.weight_ih_l0)
 
         self.register_buffer('out', torch.zeros(1, self.latent_shape))
         self.register_buffer('h', torch.zeros(1, self.latent_shape))
         self.register_buffer('c', torch.zeros(1, 1, self.latent_shape))
 
-        #self.bn = nn.BatchNorm1d(self.latent_shape)
-        #self.bn.weight.requires_grad = False
-        #self.bn.weight.fill_(self.gamma)
+        if self.bn_switch:
+            self.bn = nn.BatchNorm1d(self.latent_shape)
+            self.bn.weight.requires_grad = False
+            self.bn.weight.fill_(self.gamma)
 
     def _prior(self, h, sigma_min=0.0, raw_sigma_bias=0.5):
         hidden = self.prior(h)
@@ -75,13 +79,14 @@ class VRNN(nn.Module):
         #log_sigma = torch.log(sigma)
 
         mu = mu + prior_mu
-        #mu = self.bn(mu)
+        if self.bn_switch:
+            mu = self.bn(mu)
+
         return ReparameterizedDiagonalGaussian(mu, log_sigma)
 
     def generative(self, z_enc, h):
         px_logits = self.decoder(torch.cat([z_enc, h], dim=1))
         px_logits = px_logits + self.mean_logits
-        #px_logits = px_logits.view(-1, self.input_shape) + self.mean
         return Bernoulli(logits=px_logits)
 
     def get_bce(self, log_px, x):
@@ -104,8 +109,6 @@ class VRNN(nn.Module):
 
         batch_size = inputs.size(0)
 
-        #kl_weight = batch_size/self.len_data
-
         out = self.out.expand(batch_size, *self.out.shape[1:]).contiguous()
         h = self.h.expand(1, batch_size, self.c.shape[-1]).contiguous()
         c = self.c.expand(1, batch_size, self.c.shape[-1]).contiguous()
@@ -117,14 +120,13 @@ class VRNN(nn.Module):
         h_out = []
         mu_prior = []
         mu_post = []
-        z_out = 0
-        #for x in inputs:
+
         for t in range(inputs.size(1)):
             x = inputs[:, t, :]
-            #x_ = x - self.mean_
 
             #Embed input
             x_hat = self.phi_x(x)
+
             #Create prior distribution
             pz = self._prior(out)
 
@@ -139,7 +141,6 @@ class VRNN(nn.Module):
             px = self.generative(z_hat, out)
 
             #Update h from LSTM
-
             rnn_input = torch.cat([x_hat, z_hat], dim=1)
             rnn_input = rnn_input.unsqueeze(1)
             out, (h, c) = self.rnn(rnn_input, (h, c))
@@ -182,9 +183,7 @@ class VRNN(nn.Module):
                            "mu_prior": torch.stack(mu_prior).cpu().numpy(),
                            "mu_post": torch.stack(mu_post).cpu().numpy()}
 
-
-        mi = self.calc_mi(inputs)
-        loss = torch.mean(acc_loss/inputs.size(1)) + mi
+        loss = torch.mean(acc_loss/inputs.size(1))
 
         return -loss, diagnostics
 

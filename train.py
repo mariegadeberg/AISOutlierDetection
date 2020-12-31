@@ -26,6 +26,7 @@ parser.add_argument("--batchsize", type=int, default=1)
 parser.add_argument("--kl_start", type=float, default=0.1, help="initial kl weight")
 parser.add_argument("--warm_up", type=int, default=1, help="how many epochs before kl weight reaches 1")
 parser.add_argument("--gamma", type=float, default=0.6, help="weight of batchnormalization")
+parser.add_argument("--bn_switch", type=str, default="False", help="Whether to use batch normalization on mean approximate posterior")
 
 args = parser.parse_args()
 
@@ -39,6 +40,12 @@ val_ = args.val
 ROI = args.ROI
 batchsize = args.batchsize
 gamma = args.gamma
+bn_switch = args.bn_switch
+
+if bn_switch == "True":
+    bn_switch = True
+else:
+    bn_switch = False
 
 input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
@@ -69,7 +76,7 @@ train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batchsize, shuff
 val_ds = AISDataset(path+val_, mean_path)
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batchsize, shuffle=True, collate_fn=TruncCollate())
 
-model = VRNN(input_shape, latent_shape, mean_logits, mean_, splits, len(train_loader), gamma)
+model = VRNN(input_shape, latent_shape, mean_logits, mean_, splits, len(train_loader), gamma, bn_switch)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 # move the model to the device
 model = model.to(device)
