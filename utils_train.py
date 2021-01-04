@@ -37,7 +37,7 @@ def get_weights(w_dict, model):
     for name in w_dict:
         for n, p in model.named_parameters():
             if n == name:
-                w_ave = p.grad.trace().cpu()
+                w_ave = torch.quantile(p.grad, 0.95).cpu()
                 w_dict[name].append(w_ave)
     return w_dict
 
@@ -84,16 +84,16 @@ def get_lstm_weights(w_dict, model):
     for n, p in model.named_parameters():
         if n == "rnn.weight_ih_l0":
             w_ii, w_if, w_ic, w_io = p.grad.chunk(4, 0)
-            w_dict["w_ii"].append(w_ii.trace().cpu())
-            w_dict["w_if"].append(w_if.trace().cpu())
-            w_dict["w_ic"].append(w_ic.trace().cpu())
-            w_dict["w_io"].append(w_io.trace().cpu())
+            w_dict["w_ii"].append(torch.quantile(w_ii, 0.95).cpu())
+            w_dict["w_if"].append(torch.quantile(w_if, 0.95).cpu())
+            w_dict["w_ic"].append(torch.quantile(w_ic, 0.95).cpu())
+            w_dict["w_io"].append(torch.quantile(w_io, 0.95).cpu())
         elif n == "rnn.weight_hh_l0":
             w_hi, w_hf, w_hc, w_ho = p.grad.chunk(4, 0)
-            w_dict["w_hi"].append(w_hi.trace().cpu())
-            w_dict["w_hf"].append(w_hf.trace().cpu())
-            w_dict["w_hc"].append(w_hc.trace().cpu())
-            w_dict["w_ho"].append(w_ho.trace().cpu())
+            w_dict["w_hi"].append(torch.quantile(w_hi, 0.95).cpu())
+            w_dict["w_hf"].append(torch.quantile(w_hf, 0.95).cpu())
+            w_dict["w_hc"].append(torch.quantile(w_hc, 0.95).cpu())
+            w_dict["w_ho"].append(torch.quantile(w_ho, 0.95).cpu())
     return w_dict
 
 

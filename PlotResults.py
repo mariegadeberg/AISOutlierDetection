@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_klannBN.6/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh15_lstmgrads/output_15bh.txt")
 
 
 plt.figure()
@@ -65,15 +65,15 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("../HPCoutputs/models/bh50_klannBN.6clip5/grad_50_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/bh15_lstmgrads/grad_15_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
 plt.figure()
-for name in w_ave.keys():
+for name in w_ave[14].keys():
     #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
     #    continue
-    plt.plot(w_ave[name])
+    plt.plot(w_ave[14][name])
     legend.append([name])
 plt.title("Trace of gradients through first epoch of training",  fontsize=16)
 plt.legend(legend,  fontsize=10)
@@ -85,8 +85,26 @@ plt.ylim(-0.04, 0.08)
 #plt.savefig("../Figures/gradient_flow_BNfirst.eps")
 plt.show()
 
+
+
+with open("/Volumes/MNG/HPCoutputs/models/bh15_lstmgrads/grad_lstm_15_bh.pcl", "rb") as f:
+    w_lstm = pickle.load(f)
+
+legend = []
 plt.figure()
-plt.plot(correlate(w_ave[14]['prior.0.weight'], w_ave[14]['encoder.0.weight']))
+for name in w_lstm[0].keys():
+    #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
+    #    continue
+    plt.plot(w_lstm[0][name])
+    legend.append([name])
+plt.title("Trace of gradients through first epoch of training",  fontsize=16)
+plt.legend(legend,  fontsize=10)
+plt.xlabel("Steps",  fontsize=12)
+plt.ylabel("Parameter value",  fontsize=12)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+#plt.ylim(-0.01, 0.01)
+#plt.savefig("../Figures/gradient_flow_BNfirst.eps")
 plt.show()
 
 

@@ -234,18 +234,18 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 #plt.tight_layout()
 #plt.savefig(save_dir+"/gradient_bars.png")
 ##
-#legend = []
-#plt.figure()
-#for name in w_lstm.keys():
-#    plt.plot(w_lstm[name])
-#    legend.append([name])
-#plt.title("Trace of gradients through 1st epoch of training")
-#plt.legend(legend)
-#plt.xlabel("Steps")
-#plt.ylabel("Parameter value")
+legend = []
+plt.figure()
+for name in w_lstm.keys():
+    plt.plot(w_lstm[name])
+    legend.append([name])
+plt.title("Trace of gradients through 1st epoch of training")
+plt.legend(legend)
+plt.xlabel("Steps")
+plt.ylabel("Parameter value")
 #plt.ylim(-0.05, 0.05)
-##plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
-#plt.show()
+#plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
+plt.show()
 
 #plt.figure()
 #plt.plot(loss_plot)
