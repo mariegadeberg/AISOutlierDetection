@@ -44,8 +44,8 @@ class VRNN(nn.Module):
                                      nn.ReLU())
 
         self.rnn = nn.LSTM(self.latent_shape + self.latent_shape, self.latent_shape, batch_first=True)
-        torch.nn.init.xavier_uniform_(self.rnn.weight_hh_l0)
-        torch.nn.init.xavier_uniform_(self.rnn.weight_ih_l0)
+        #torch.nn.init.xavier_uniform_(self.rnn.weight_hh_l0)
+        #torch.nn.init.xavier_uniform_(self.rnn.weight_ih_l0)
 
         self.register_buffer('out', torch.zeros(1, self.latent_shape))
         self.register_buffer('h', torch.zeros(1, self.latent_shape))

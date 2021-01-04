@@ -91,6 +91,7 @@ else:
 
 anneal_rate = (1.0 - args.kl_start) / (args.warm_up * (len(train_ds) / batchsize))
 grads = []
+grads_lstm = []
 
 with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
@@ -117,6 +118,15 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
                  "rnn.weight_ih_l0":[],
                  "rnn.weight_hh_l0":[]}
 
+        w_lstm = {"w_ii": [],
+                 "w_if": [],
+                 "w_ic": [],
+                 "w_io": [],
+                 "w_hi": [],
+                 "w_hf": [],
+                 "w_hc": [],
+                 "w_ho": [],}
+
         #loss_plot = []
 
         model.train()
@@ -139,6 +149,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
             optimizer.step()
             #plot_grad_flow(model.named_parameters())
             w_ave = get_weights(w_ave, model)
+            w_lstm = get_lstm_weights(w_lstm, model)
 
             if i % 200 == 0:
                 diagnostics_list.append(diagnostics)
@@ -216,6 +227,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
         writer.flush()
 
         grads.append(w_ave.copy())
+        grads_lstm.append(w_lstm.copy())
 
         epoch += 1
 
@@ -224,14 +236,14 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 ##
 #legend = []
 #plt.figure()
-#for name in w_ave.keys():
-#    plt.plot(w_ave[name])
+#for name in w_lstm.keys():
+#    plt.plot(w_lstm[name])
 #    legend.append([name])
 #plt.title("Trace of gradients through 1st epoch of training")
 #plt.legend(legend)
 #plt.xlabel("Steps")
 #plt.ylabel("Parameter value")
-##plt.ylim(-1, 0.5)
+#plt.ylim(-0.05, 0.05)
 ##plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
 #plt.show()
 
@@ -250,6 +262,9 @@ with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
 
 with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(grads, fp)
+
+with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
+    pickle.dump(grads_lstm, fp)
 
 
 

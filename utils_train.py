@@ -80,6 +80,22 @@ def calc_au(model, test_data_batch, device, delta=0.01):
 
     return (au_var >= delta).sum().item(), au_var
 
+def get_lstm_weights(w_dict, model):
+    for n, p in model.named_parameters():
+        if n == "rnn.weight_ih_l0":
+            w_ii, w_if, w_ic, w_io = p.grad.chunk(4, 0)
+            w_dict["w_ii"].append(w_ii.trace().cpu())
+            w_dict["w_if"].append(w_if.trace().cpu())
+            w_dict["w_ic"].append(w_ic.trace().cpu())
+            w_dict["w_io"].append(w_io.trace().cpu())
+        elif n == "rnn.weight_hh_l0":
+            w_hi, w_hf, w_hc, w_ho = p.grad.chunk(4, 0)
+            w_dict["w_hi"].append(w_hi.trace().cpu())
+            w_dict["w_hf"].append(w_hf.trace().cpu())
+            w_dict["w_hc"].append(w_hc.trace().cpu())
+            w_dict["w_ho"].append(w_ho.trace().cpu())
+    return w_dict
+
 
 '''
 def test_func(w_dict, named_parameters, i):

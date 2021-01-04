@@ -20,7 +20,7 @@ mean_logits = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
 train_ds = AISDataset("/Volumes/MNG/data/Small/train_bh_small.pcl", "/Volumes/MNG/data/mean_bh.pcl")
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True, collate_fn=TruncCollate())
 
-model = VRNN(Config.input_shape["bh"], Config.latent_shape, mean_logits,mean_, Config.splits["bh"], len(train_loader), gamma=0.6)
+model = VRNN(Config.input_shape["bh"], Config.latent_shape, mean_logits,mean_, Config.splits["bh"], len(train_loader), gamma=0.6, bn_switch=False)
 model.load_state_dict(state_dict)
 
 it = iter(train_loader)
