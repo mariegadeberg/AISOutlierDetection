@@ -263,7 +263,7 @@ with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
 with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(grads, fp)
 
-with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
+with open(save_dir+f"grad_lstm_{num_epoch}_{ROI}.pcl", "wb") as fp:
     pickle.dump(grads_lstm, fp)
 
 
