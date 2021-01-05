@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh15_lstmgrads/output_15bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_klann_lstmgrads/output_30bh.txt")
 
 
 plt.figure()
@@ -65,39 +65,39 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("/Volumes/MNG/HPCoutputs/models/bh15_lstmgrads/grad_15_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/bh30_klann_lstmgrads/grad_30_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
 plt.figure()
-for name in w_ave[14].keys():
+for name in w_ave[29].keys():
     #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
     #    continue
-    plt.plot(w_ave[14][name])
+    plt.plot(w_ave[29][name])
     legend.append([name])
-plt.title("Trace of gradients through first epoch of training",  fontsize=16)
+plt.title("95th quantile of gradients through last epoch of training",  fontsize=16)
 plt.legend(legend,  fontsize=10)
 plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.ylim(-0.04, 0.08)
+#plt.ylim(-0.00005, 0.0005)
 #plt.savefig("../Figures/gradient_flow_BNfirst.eps")
 plt.show()
 
 
 
-with open("/Volumes/MNG/HPCoutputs/models/bh15_lstmgrads/grad_lstm_15_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/bh30_klann_lstmgrads/grad_lstm_30_bh.pcl", "rb") as f:
     w_lstm = pickle.load(f)
 
 legend = []
 plt.figure()
-for name in w_lstm[0].keys():
+for name in w_lstm[29].keys():
     #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
     #    continue
-    plt.plot(w_lstm[0][name])
+    plt.plot(w_lstm[29][name])
     legend.append([name])
-plt.title("Trace of gradients through first epoch of training",  fontsize=16)
+plt.title("95th percentile of gradients of LSTM in last epoch",  fontsize=16)
 plt.legend(legend,  fontsize=10)
 plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
