@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_noskip/output_30bh.txt")
 
 
 plt.figure()
@@ -15,7 +15,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.savefig("../Figures/loss_30BN.eps")
+plt.savefig("../Figures/loss_30noskip.eps")
 plt.show()
 
 
@@ -28,7 +28,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.savefig("../Figures/kl_30BN.eps")
+plt.savefig("../Figures/kl_30noskip.eps")
 plt.show()
 
 plt.figure()
@@ -83,7 +83,7 @@ plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
 plt.tight_layout()
 plt.ylim(-0.00005, 0.001)
-#plt.savefig("../Figures/gradient_flow_BNlast.eps")
+#plt.savefig("../Figures/gradient_flow_BNlast_zoom.eps")
 plt.show()
 
 
