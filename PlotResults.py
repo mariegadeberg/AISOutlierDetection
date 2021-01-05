@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_klann_lstmgrads/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/output_30bh.txt")
 
 
 plt.figure()
@@ -65,7 +65,7 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("/Volumes/MNG/HPCoutputs/models/bh30_klann_lstmgrads/grad_30_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/grad_30_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
@@ -75,19 +75,20 @@ for name in w_ave[29].keys():
     #    continue
     plt.plot(w_ave[29][name])
     legend.append([name])
-plt.title("95th quantile of gradients through last epoch of training",  fontsize=16)
+plt.title("95th Quantile of Gradients \n Through Last Epoch of Training",  fontsize=16)
 plt.legend(legend,  fontsize=10)
 plt.xlabel("Steps",  fontsize=12)
 plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.ylim(-0.00005, 0.0005)
-#plt.savefig("../Figures/gradient_flow_BNfirst.eps")
+plt.tight_layout()
+plt.ylim(-0.00005, 0.001)
+#plt.savefig("../Figures/gradient_flow_BNlast.eps")
 plt.show()
 
 
 
-with open("/Volumes/MNG/HPCoutputs/models/bh30_klann_lstmgrads/grad_lstm_30_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/grad_lstm_30_bh.pcl", "rb") as f:
     w_lstm = pickle.load(f)
 
 legend = []

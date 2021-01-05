@@ -8,7 +8,7 @@ from utils_preprocess import AISDataset, TruncCollate, prep_mean
 from matplotlib.lines import Line2D
 
 state_dict = torch.load("../HPCoutputs/models/bh30_meanMI/vrnn_bh30_epochs.pt", map_location=torch.device('cpu'))
-state_dict = torch.load("/Volumes/MNG/HPCoutputs/models/bh30_meanklann/vrnn_bh30_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/vrnn_bh30_epochs.pt", map_location=torch.device('cpu'))
 
 
 
@@ -20,7 +20,7 @@ mean_logits = prep_mean("/Volumes/MNG/data/mean_bh.pcl")
 train_ds = AISDataset("/Volumes/MNG/data/Small/train_bh_small.pcl", "/Volumes/MNG/data/mean_bh.pcl")
 train_loader = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True, collate_fn=TruncCollate())
 
-model = VRNN(Config.input_shape["bh"], Config.latent_shape, mean_logits,mean_, Config.splits["bh"], len(train_loader), gamma=0.6, bn_switch=False)
+model = VRNN(Config.input_shape["bh"], Config.latent_shape, mean_logits,mean_, Config.splits["bh"], len(train_loader), gamma=0.6, bn_switch=True)
 model.load_state_dict(state_dict)
 
 it = iter(train_loader)
@@ -54,7 +54,7 @@ plt.ylim(Config.lat_min, Config.ROI_boundary_lat)
 plt.title("Reconstructed paths", fontsize=16)
 plt.xlabel("Longitude", fontsize=12)
 plt.ylabel("Latitude", fontsize=12)
-plt.savefig("../Figures/recon_paths.png")
+#plt.savefig("../Figures/recon_paths.png")
 plt.show()
 
 plt.figure()
@@ -127,8 +127,8 @@ plt.figure()
 for k in range(2,3):
     lat_out = []
     long_out = []
-    for i in range(0,32):
-        t = diagnostics["log_px"][i,k,:]
+    for i in range(len(diagnostics["log_px"])):
+        t = diagnostics["log_px"][i,k, :]
         q = inputs[k, i, :]
         lat, long, sog, cog = np.split(t, breaks)
         latt, longt, sogt, cogt = np.split(q, breaks)
@@ -149,7 +149,7 @@ plt.figure()
 for k in range(2,3):
     lat_out = []
     long_out = []
-    for i in range(0,32):
+    for i in range(len(diagnostics["log_px"])):
         t = diagnostics["log_px"][i,k,:]
         q = inputs[k, i, :]
         lat, long, sog, cog = np.split(t, breaks)
