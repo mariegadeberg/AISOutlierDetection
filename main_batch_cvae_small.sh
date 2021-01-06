@@ -1,7 +1,7 @@
 #!/bin/sh
 # embedded options to bsub - start with #BSUB
 # -- Name of the job ---
-#BSUB -J vrnn_sk15
+#BSUB -J cvae10
 # -- specify queue --
 #BSUB -q gpuv100
 
@@ -42,4 +42,9 @@
 #module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train.py --num_epoch 15 --train "train_sk_.pcl" --val "val_sk_.pcl" --ROI "sk"
+python AISOutlierDetection/train_cnnvae.py \
+      --num_epoch 10 \
+      --path "./data/small/" \
+      --train "train_bh_small.pcl" \
+      --val "val_bh_small.pcl" \
+
