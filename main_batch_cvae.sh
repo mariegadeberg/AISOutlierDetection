@@ -42,4 +42,8 @@
 #module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train.py --num_epoch 15 --train "train_blt_.pcl" --val "val_blt_.pcl" --ROI "blt"
+python AISOutlierDetection/cnnvae_train.py \
+      --num_epoch 15 \
+      --train "train_bh_.pcl" \
+      --val "val_bh_.pcl" \
+      --ROI "bh"
