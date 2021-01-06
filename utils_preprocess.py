@@ -288,6 +288,32 @@ class AISDataset(torch.utils.data.Dataset):
         item = self.dataset[idx]["FourHot"].todense() - self.mean
         return torch.tensor(item, dtype=torch.float)
 
+class AISDataset_Image(torch.utils.data.Dataset):
+    def __init__(self, path, Config):
+        self.path = path
+        self.Config = Config
+
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def __getitem__(self, idx):
+        img = self.dataset[idx]["FourHot"].todense()
+
+        lat, long, sog, cog = np.split(img, self.Config.breaks["bh"], axis=1)
+
+        path_img = np.zeros([201, 402])
+        for t in range(len(lat)):
+            slice = np.transpose(lat[t, :])[::-1] @ long[t, :]
+            path_img += slice
+
+        item = path_img / np.max(path_img, axis=1).max()
+
+        return torch.tensor(item, dtype=torch.float)
+
+
 
 def pad_tensor(vec, pad, dim):
     """

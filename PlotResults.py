@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_noskip/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BNclip0.6/output_30bh.txt")
 
 
 plt.figure()
@@ -15,7 +15,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/loss_30noskip.eps")
+#plt.savefig("../Figures/loss_30noskip.eps")
 plt.show()
 
 
@@ -28,7 +28,7 @@ plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/kl_30noskip.eps")
+#plt.savefig("../Figures/kl_30noskip.eps")
 plt.show()
 
 plt.figure()
@@ -65,13 +65,13 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/grad_30_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/bh30_norminput_klann/grad_30_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
 plt.figure()
 for name in w_ave[29].keys():
-    #if name == "phi_z.0.weight" or name == "phi_x.0.weight" or name == "prior.0.weight":
+    #if name == "decoder.0.weight":
     #    continue
     plt.plot(w_ave[29][name])
     legend.append([name])
@@ -82,11 +82,9 @@ plt.ylabel("Parameter value",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
 plt.tight_layout()
-plt.ylim(-0.00005, 0.001)
+#plt.ylim(-0.0000005, 0.000001)
 #plt.savefig("../Figures/gradient_flow_BNlast_zoom.eps")
 plt.show()
-
-
 
 with open("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BN/grad_lstm_30_bh.pcl", "rb") as f:
     w_lstm = pickle.load(f)
