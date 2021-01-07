@@ -5,7 +5,7 @@ import pickle
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
 results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BNclip0.6/output_30bh.txt")
 
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh15/output_15bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh15_noBN/output_15bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_10bh.txt")
 
 

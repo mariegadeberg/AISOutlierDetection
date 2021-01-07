@@ -87,6 +87,7 @@ class CVAE(nn.Module):
                                                         kernel_size=(3, 3),
                                                         stride=2,
                                                         padding=1),
+                                     #nn.BatchNorm2d(self.init_kernel),
                                      nn.ReLU(),
                                      nn.ConvTranspose2d(in_channels=self.init_kernel,
                                                         out_channels=1,

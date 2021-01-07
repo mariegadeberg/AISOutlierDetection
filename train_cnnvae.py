@@ -40,6 +40,8 @@ training_data = defaultdict(list)
 validation_data = defaultdict(list)
 epoch=0
 
+grads = []
+
 with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output_file:
     header = ["training_elbo", "validation_elbo", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
@@ -47,6 +49,30 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
 
     while epoch < args.num_epoch:
         print(f"Runninng epoch {epoch + 1}")
+
+        w_ave = {"encoder.0.weight": [],
+                 "encoder.2.weight": [],
+                 "encoder.3.weight": [],
+                 "encoder.5.weight": [],
+                 "encoder.6.weight": [],
+                 "encoder.8.weight": [],
+                 "encoder.9.weight": [],
+                 "encoder.11.weight": [],
+                 "encoder.12.weight": [],
+                 "encoder.15.weight": [],
+                 "encoder.17.weight": [],
+                 "decoder.0.weight": [],
+                 "decoder.2.weight": [],
+                 "decoder.3.weight": [],
+                 "decoder.4.weight": [],
+                 "decoder.5.weight": [],
+                 "decoder.7.weight": [],
+                 "decoder.8.weight": [],
+                 "decoder.10.weight": [],
+                 "decoder.11.weight": [],
+                 "decoder.13.weight": [],
+                 "decoder.15.weight": []
+                 }
 
         training_epoch_data = defaultdict(list)
         validation_epoch_data = defaultdict(list)
@@ -60,7 +86,11 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
 
             optimizer.zero_grad()
             loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
             optimizer.step()
+
+            #plot_grad_flow(model.named_parameters())
+            w_ave = get_weights(w_ave, model)
 
             for k, v in diagnostics.items():
                 training_epoch_data[k] += [v.mean().item()]
@@ -110,9 +140,31 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
 
         output_file.flush()
 
+        grads.append(w_ave.copy())
+
         epoch += 1
 
-torch.save(model.state_dict(), args.save_dir+f"vrnn_{args.ROI}{args.num_epoch}_epochs.pt")
+#plt.tight_layout()
+#plt.show()
+#
+#legend = []
+#plt.figure()
+#for name in w_ave.keys():
+#    plt.plot(w_ave[name])
+#    legend.append([name])
+#plt.title("Trace of gradients through 1st epoch of training")
+#plt.legend(legend)
+#plt.xlabel("Steps")
+#plt.ylabel("Parameter value")
+##plt.ylim(-0.05, 0.05)
+##plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
+#plt.show()
+
+
+torch.save(model.state_dict(), args.save_dir+f"cvae_{args.ROI}{args.num_epoch}_epochs.pt")
+
+with open(args.save_dir+f"grad_{args.num_epoch}_{args.ROI}.pcl", "wb") as fp:
+    pickle.dump(grads, fp)
 
 #with open(args.save_dir+f"training_{args.num_epoch}_{args.ROI}.pcl", "wb") as fp:
 #    pickle.dump(training_data, fp)
