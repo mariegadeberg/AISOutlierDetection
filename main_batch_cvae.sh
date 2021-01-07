@@ -1,7 +1,7 @@
 #!/bin/sh
 # embedded options to bsub - start with #BSUB
 # -- Name of the job ---
-#BSUB -J cvae50
+#BSUB -J cvae15
 # -- specify queue --
 #BSUB -q gpuv100
 
@@ -43,7 +43,7 @@
 
 # run program
 python AISOutlierDetection/train_cnnvae.py \
-      --num_epoch 50 \
+      --num_epoch 15 \
       --train "train_bh_.pcl" \
       --val "val_bh_.pcl" \
       --ROI "bh"
