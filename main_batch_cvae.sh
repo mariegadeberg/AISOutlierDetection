@@ -1,7 +1,7 @@
 #!/bin/sh
 # embedded options to bsub - start with #BSUB
 # -- Name of the job ---
-#BSUB -J vrnn_sk15
+#BSUB -J vrnn_blt15
 # -- specify queue --
 #BSUB -q gpuv100
 
@@ -14,7 +14,7 @@
 ### -- specify that we need 5GB of memory per core/slot --
 #BSUB -R "rusage[mem=32GB]"
 ### -- specify that we want the job to get killed if it exceeds 12 GB per core/slot -- 
-### BSUB -M 10GB
+### BSUB -M GB
 ### -- set walltime limit: hh:mm -- Maximum of 24 hours --
 #BSUB -W 24:00 
 
@@ -42,4 +42,8 @@
 #module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train.py --num_epoch 15 --train "train_sk_.pcl" --val "val_sk_.pcl" --ROI "sk"
+python AISOutlierDetection/train_cnnvae.py \
+      --num_epoch 15 \
+      --train "train_bh_.pcl" \
+      --val "val_bh_.pcl" \
+      --ROI "bh"
