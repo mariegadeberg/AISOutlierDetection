@@ -43,7 +43,7 @@
 
 # run program
 python AISOutlierDetection/train_cnnvae.py \
-      --num_epoch 10 \
+      --num_epoch 100 \
       --path "./data/small/" \
       --train "train_bh_small.pcl" \
       --val "val_bh_small.pcl" \
