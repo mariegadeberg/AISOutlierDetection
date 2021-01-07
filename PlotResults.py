@@ -5,11 +5,14 @@ import pickle
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
 results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BNclip0.6/output_30bh.txt")
 
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh15/output_15bh.txt")
+results = pd.read_csv("/Volumes/MNG/models/output_10bh.txt")
+
 
 plt.figure()
-plt.plot(results.training_loss)
+plt.plot(results.training_elbo[1:])
 #plt.plot(results.validation_loss)
-plt.legend([f"Value at last epoch: {results.training_loss.iloc[-1]:.4f}"], fontsize=12)
+plt.legend([f"Value at last epoch: {results.training_elbo.iloc[-1]:.4f}"], fontsize=12)
 plt.title("Training Loss", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)

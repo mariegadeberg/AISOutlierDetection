@@ -45,8 +45,8 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
 
-    print(f"Runninng epoch {epoch+1}")
     while epoch < args.num_epoch:
+        print(f"Runninng epoch {epoch + 1}")
 
         training_epoch_data = defaultdict(list)
         validation_epoch_data = defaultdict(list)
@@ -85,6 +85,7 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
             #    validation_data[k] += [np.mean(validation_epoch_data[k])]
 
         print(f"{'training elbo':6} | mean = {np.mean(training_epoch_data['elbo']):10.3f}")
+        print(f"{'training KL':6} | mean = {np.mean(training_epoch_data['kl']):10.3f}")
 
         csv_writer.writerow({"training_elbo": np.mean(training_epoch_data["elbo"]),
                              "validation_elbo": np.mean(validation_epoch_data["elbo"]),

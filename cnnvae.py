@@ -28,24 +28,28 @@ class CVAE(nn.Module):
                                                kernel_size=(3, 3),
                                                stride=2,
                                                padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*2),
                                      nn.ReLU(),
                                      nn.Conv2d(in_channels=self.init_kernel*2, #input is bz x 32 x 51 x 101
                                                out_channels=self.init_kernel*4,
                                                kernel_size=3,
                                                stride=2,
                                                padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*4),
                                      nn.ReLU(),
                                      nn.Conv2d(in_channels=self.init_kernel*4, #input is bz x 64 x 26 x 51
                                                out_channels=self.init_kernel*8,
                                                kernel_size=(4, 3),
                                                stride=2,
                                                padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*8),
                                      nn.ReLU(),
                                      nn.Conv2d(in_channels=self.init_kernel*8, #input is bz x 128 x 13 x 26
                                                out_channels=self.init_kernel*16,
                                                kernel_size=(3,4),
                                                stride=2,
                                                padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*16),
                                      nn.ReLU(), #output is bz x 256 x 7 x 13
                                      flatten(), #flatten to bz x 23296
                                      nn.Linear(in_features=256*7*13, out_features=512),
@@ -62,18 +66,21 @@ class CVAE(nn.Module):
                                                         kernel_size = (3, 4),
                                                         stride=2,
                                                         padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*8),
                                      nn.ReLU(),
                                      nn.ConvTranspose2d(in_channels=self.init_kernel*8, #input is bz x 128 x 13 x 26
                                                         out_channels=self.init_kernel*4,
                                                         kernel_size = (4, 3),
                                                         stride=2,
                                                         padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*4),
                                      nn.ReLU(),
                                      nn.ConvTranspose2d(in_channels=self.init_kernel*4, #input is bz x 64 x 26 x 51
                                                         out_channels=self.init_kernel*2,
                                                         kernel_size=3,
                                                         stride=2,
                                                         padding=1),
+                                     nn.BatchNorm2d(self.init_kernel*2),
                                      nn.ReLU(),
                                      nn.ConvTranspose2d(in_channels=self.init_kernel*2,
                                                         out_channels=self.init_kernel,
@@ -138,6 +145,21 @@ class CVAE(nn.Module):
 
         return loss, diagnostics
 
+    def sample(self, x):
+        qz = self.approximate_posterior(x)
+
+        # Define prior
+        pz = self.prior(x.size(0))
+
+        # Sample z
+        z = qz.rsample()
+
+        # Define generative model
+        px = self.generative(z)
+
+        logits = px.logits
+
+        return logits
 
 
 class flatten(nn.Module):
