@@ -65,7 +65,7 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
             for k, v in diagnostics.items():
                 training_epoch_data[k] += [v.mean().item()]
 
-        #for k, v in training_epoch_data.items():
+        ##for k, v in training_epoch_data.items():
         #    training_data[k] += [np.mean(training_epoch_data[k])]
 
         model.eval()
