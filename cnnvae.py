@@ -161,6 +161,47 @@ class CVAE(nn.Module):
 
         return logits
 
+    def calc_mi(self, x):
+
+        batch_size = x.size(0)
+
+        # Define approximate posterior
+        qz = self.approximate_posterior(x)
+
+        # Sample z
+        z = qz.rsample()
+
+        mu = qz.mu
+        logsigma = torch.log(qz.sigma)
+
+        # Create approximate posterior
+
+        neg_entropy = (-0.5 * self.latent_features * math.log(2 * math.pi) - 0.5 * (1 + 2 * logsigma).sum(-1)).mean()
+
+        var = logsigma.exp()**2
+
+        z = z.unsqueeze(1)
+        mu = mu.unsqueeze(0)
+        logsigma = logsigma.unsqueeze(0)
+
+        dev = z - mu
+        log_density = -0.5 * ((dev ** 2) / var).sum(dim=-1) - 0.5 * (self.latent_features * math.log(2 * math.pi) + (2*logsigma).sum(dim=-1))
+
+        log_qz = torch.logsumexp(log_density, dim=1) - math.log(batch_size)
+
+        mi = (neg_entropy - log_qz.mean(-1)).item()
+
+        return mi
+
+    def encode_stats(self, x):
+        x = x.unsqueeze(1)
+        qz = self.approximate_posterior(x)
+
+        mu = qz.mu
+
+        return mu
+
+
 
 class flatten(nn.Module):
     def forward(self, input):

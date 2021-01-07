@@ -41,7 +41,7 @@ validation_data = defaultdict(list)
 epoch=0
 
 with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output_file:
-    header = ["training_elbo", "validation_elbo", "training_kl", "validation_kl", "training_logpx", "validation_logpx"]
+    header = ["training_elbo", "validation_elbo", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
 
@@ -71,6 +71,8 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
         model.eval()
         with torch.no_grad():
 
+            num_examples = 0
+            mi = 0
             for val_inputs in val_loader:
 
                 val_inputs = val_inputs.unsqueeze(1)  # adding greyscale channel
@@ -81,18 +83,29 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
                 for k, v in diagnostics.items():
                     validation_epoch_data[k] += [v.mean().item()]
 
+                num_examples += val_inputs.size(0)
+                mutual_info = model.calc_mi(val_inputs)
+                mi += mutual_info * val_inputs.size(0)
+
+            mi = mi / num_examples
+            au, _ = calc_au(model, val_loader, device)
+
             #for k, v in validation_epoch_data.items():
             #    validation_data[k] += [np.mean(validation_epoch_data[k])]
 
         print(f"{'training elbo':6} | mean = {np.mean(training_epoch_data['elbo']):10.3f}")
         print(f"{'training KL':6} | mean = {np.mean(training_epoch_data['kl']):10.3f}")
+        print(f"{'mi':6} | {mi}")
+        print(f"{'au':6} | {au}")
 
         csv_writer.writerow({"training_elbo": np.mean(training_epoch_data["elbo"]),
                              "validation_elbo": np.mean(validation_epoch_data["elbo"]),
                              "training_kl": np.mean(training_epoch_data["kl"]),
                              "validation_kl": np.mean(validation_epoch_data["kl"]),
                              "training_logpx": np.mean(training_epoch_data["log_px"]),
-                             "validation_logpx": np.mean(validation_epoch_data["log_px"])
+                             "validation_logpx": np.mean(validation_epoch_data["log_px"]),
+                             "mi": mi,
+                             "au": au
                              })
 
         output_file.flush()
