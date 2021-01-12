@@ -46,4 +46,5 @@ python AISOutlierDetection/train_cnnvae.py \
       --num_epoch 30 \
       --train "train_bh_1h.pcl" \
       --val "val_bh_1h.pcl" \
-      --ROI "bh" 
+      --ROI "bh" \
+      --name "norm1h”
