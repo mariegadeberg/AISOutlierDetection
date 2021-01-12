@@ -446,13 +446,13 @@ with open("/Volumes/MNG/data/test_bh_.pcl", "rb") as file:
 
 routes_tagged_true = tag_route_for_plt(dataset, random.choices(outliers_true, k=30))
 
-routes_tagged_true = tag_route_for_plt(dataset, random.choices(outliers_pass, k=30))
+routes_tagged_true = tag_route_for_plt(dataset, random.choices(outliers_pass, k=45))
 
 legend_lines = [Line2D([0], [0], color="b", lw=2),
                 Line2D([0], [0], color="r", lw=2)]
 f, ax = plt.subplots()
-dk2.plot(ax=ax)
-swe.plot(ax=ax)
+dk2.plot(ax=ax, color="olivedrab")
+swe.plot(ax=ax, color="olivedrab")
 for i in range(len(routes_tagged_true["lat"])):
     if routes_tagged_true["anomaly"][i] == 1:
         continue
@@ -471,10 +471,10 @@ for i in range(len(routes_tagged_true["lat"])):
 plt.title("Paths Marked for Anomalies", fontsize=16)
 plt.xlabel("Longitude", fontsize=12)
 plt.ylabel("Latitude", fontsize=12)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
 plt.xlim(13, 17)
 plt.ylim(54.5, 56.5)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
 plt.legend(legend_lines, ["Normal", "Anomaly"], fontsize=12)
 #plt.savefig("../Figures/anomalies.png")
 plt.show()

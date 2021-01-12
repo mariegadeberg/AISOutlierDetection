@@ -52,7 +52,7 @@ latent_shape = Config.latent_shape
 lr = Config.lr
 splits = Config.splits[ROI]
 
-mean_path = path+"mean_"+ROI+".pcl"
+mean_path = path+"mean_"+ROI+"_1h.pcl"
 
 # Setup for training
 writer = SummaryWriter()
