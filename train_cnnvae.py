@@ -30,7 +30,7 @@ if args.normalize_input == "True":
 elif args.normalize_input == "False":
     train_ds = AISDataset_ImageOneHot(args.path + args.train, Config)
 
-rain_loader = torch.utils.data.DataLoader(train_ds, batch_size=args.batchsize, shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_ds, batch_size=args.batchsize, shuffle=True)
 
 if args.normalize_input == "True":
     val_ds = AISDataset_Image(args.path + args.val, Config)
