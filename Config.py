@@ -26,15 +26,15 @@ class Config(object):
     ROI_boundary_lat = 56.5
 
     ## Set the maximum interval between AIS messages before splitting trajectory
-    max_interval = 60 * 60 * 4
+    max_interval = 60 * 60 * 1 # 60*60*1 = 1h
 
     ## Set the maximum percentage of time with SOG < 0.1 knots before defined as moored or anchored
     threshold_moored = 0.8
 
     ## Set thresholds for durations
     threshold_trajlen = 20
-    threshold_dur_min = 4*60*60
-    threshold_dur_max = 24*60*60
+    threshold_dur_min = 4 *60 * 60 # 4*60*60
+    threshold_dur_max = 24*60*60 #24*60*60
 
 
     ## Time in seconds from epoch to T0 of dataset

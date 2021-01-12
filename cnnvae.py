@@ -159,8 +159,9 @@ class CVAE(nn.Module):
         px = self.generative(z)
 
         logits = px.logits
+        log_px = self.reduce(px.log_prob(x))
 
-        return logits
+        return logits, log_px
 
     def calc_mi(self, x):
 
@@ -202,7 +203,20 @@ class CVAE(nn.Module):
 
         return mu
 
+    def sample_corrupt(self, x_c, x_t):
+        qz = self.approximate_posterior(x_c)
 
+        # Sample z
+        z = qz.rsample()
+
+        # Define generative model
+        px = self.generative(z)
+
+        logits = px.logits
+        #log_px = self.reduce(px.log_prob(x_t))
+        log_px = px.log_prob(x_t)
+
+        return logits, log_px
 
 class flatten(nn.Module):
     def forward(self, input):

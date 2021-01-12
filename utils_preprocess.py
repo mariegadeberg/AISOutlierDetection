@@ -5,6 +5,8 @@ from scipy import sparse
 import torch
 import pickle
 import datetime
+import random
+
 
 class Preprocess:
     def __init__(self, Config):
@@ -312,6 +314,198 @@ class AISDataset_Image(torch.utils.data.Dataset):
         item = path_img / np.max(path_img, axis=1).max()
 
         return torch.tensor(item, dtype=torch.float)
+
+class AISDataset_ImageFlipped(torch.utils.data.Dataset):
+    def __init__(self, path, Config):
+        self.path = path
+        self.Config = Config
+
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def __getitem__(self, idx):
+        img = self.dataset[idx]["FourHot"].todense()
+
+        lat, long, sog, cog = np.split(img, self.Config.breaks["bh"], axis=1)
+
+        path_img = np.zeros([201, 402])
+        for t in range(len(lat)):
+            slice = np.transpose(lat[t, :]) @ long[t, :]
+            path_img += slice
+
+        item = path_img / np.max(path_img, axis=1).max()
+
+        return torch.tensor(item, dtype=torch.float)
+
+class AISDataset_ImageCut(torch.utils.data.Dataset):
+    def __init__(self, path, Config):
+        self.path = path
+        self.Config = Config
+
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def __getitem__(self, idx):
+        img = self.dataset[idx]["FourHot"].todense()
+
+        lat, long, sog, cog = np.split(img, self.Config.breaks["bh"], axis=1)
+
+        path_img = np.zeros([201, 402])
+        for t in range(len(lat)):
+            slice = np.transpose(lat[t, :])[::-1] @ long[t, :]
+            path_img += slice
+
+        item = path_img / np.max(path_img, axis=1).max()
+
+        item[:, 200:] = 0
+
+        return torch.tensor(item, dtype=torch.float)
+
+class AISDataset_ImageBlackout(torch.utils.data.Dataset):
+    def __init__(self, path, Config, size = 20):
+        self.path = path
+        self.Config = Config
+        self.size = size
+        self.size_lat = 20
+        random.seed(123)
+
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def blackout(self, item):
+        i = np.where(item > 0)
+
+        #z = [item for item in zip(i[0], i[1]) if
+        #     item[0] > self.size and item[0] < len(self.Config.lat_columns["bh"]) - self.size and item[
+        #         1] > self.size and item[1] < len(self.Config.long_columns["bh"]) - self.size]
+
+        z = [item for item in zip(i[0], i[1]) if
+             item[1] > self.size and item[1] < len(self.Config.long_columns["bh"]) - self.size]
+
+        if len(z) == 0:
+            self.size = 30
+            z = [item for item in zip(i[0], i[1]) if
+                 item[0] > self.size_lat and item[0] < len(self.Config.lat_columns["bh"]) - self.size_lat and item[
+                     1] > self.size and item[1] < len(self.Config.long_columns["bh"]) - self.size]
+
+        if len(z) == 0:
+            self.size = 10
+            self.size_lat = 10
+            z = [item for item in zip(i[0], i[1]) if
+                 item[0] > self.size_lat and item[0] < len(self.Config.lat_columns["bh"]) - self.size_lat and item[
+                     1] > self.size and item[1] < len(self.Config.long_columns["bh"]) - self.size]
+
+        random.seed(123)
+        idx_random = random.choice(z)
+        #while idx_random[0] < self.size \
+        #        or idx_random[0] > len(self.Config.lat_columns["bh"]) - self.size \
+        #        or idx_random[1] < self.size \
+        #        or idx_random[1] > len(self.Config.long_columns["bh"]) - self.size:
+        #    idx_random = random.choice([item for item in zip(i[0], i[1])])
+
+        #item[idx_random[0] - self.size:idx_random[0] + self.size, idx_random[1] - self.size:idx_random[1] + self.size] = 0
+        item[idx_random[0] - self.size_lat:idx_random[0] + self.size_lat, idx_random[1] - self.size:idx_random[1] + self.size] = 0
+
+        return item
+
+    def __getitem__(self, idx):
+        img = self.dataset[idx]["FourHot"].todense()
+
+        lat, long, sog, cog = np.split(img, self.Config.breaks["bh"], axis=1)
+
+        path_img = np.zeros([201, 402])
+        for t in range(len(lat)):
+            slice = np.transpose(lat[t, :])[::-1] @ long[t, :]
+            path_img += slice
+
+        item = path_img / np.max(path_img, axis=1).max()
+
+        item = self.blackout(item)
+
+        return torch.tensor(item, dtype=torch.float)
+
+class AISDataset_ImageShift(torch.utils.data.Dataset):
+    def __init__(self, path, Config, shift = 5):
+        self.path = path
+        self.Config = Config
+        self.shift = shift
+
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def shift_lat(self, lat):
+        lat_tst = lat.copy()
+        present = lat_tst.sum(axis=0)
+        shift_feasible = (present[0, -self.shift] == 0).all()
+        if shift_feasible:
+            s = np.zeros([lat_tst.shape[0], self.shift])
+            new_lat = np.concatenate((s, lat_tst), axis=1)[:, :-self.shift]
+        elif (present[0, 0:self.shift] == 0).all():
+            s = np.zeros([lat_tst.shape[0], self.shift])
+            new_lat = np.concatenate((lat_tst, s), axis=1)[:, self.shift:]
+        else:
+            new_lat = lat
+
+        return new_lat
+
+
+    def __getitem__(self, idx):
+        img = self.dataset[idx]["FourHot"].todense()
+
+        lat, long, sog, cog = np.split(img, self.Config.breaks["bh"], axis=1)
+
+        lat = self.shift_lat(lat)
+
+        path_img = np.zeros([201, 402])
+        for t in range(len(lat)):
+            slice = np.transpose(lat[t, :])[::-1] @ long[t, :]
+            path_img += slice
+
+        item = path_img / np.max(path_img, axis=1).max()
+
+        return torch.tensor(item, dtype=torch.float)
+
+
+class AISDataset_ImageOneHot(torch.utils.data.Dataset):
+    def __init__(self, path, Config):
+        self.path = path
+        self.Config = Config
+
+        with open(self.path, "rb") as f:
+            self.dataset = pickle.load(f)
+
+    def __len__(self):
+        return(len(self.dataset))
+
+    def __getitem__(self, idx):
+        img = self.dataset[idx]["FourHot"].todense()
+
+        lat, long, sog, cog = np.split(img, self.Config.breaks["bh"], axis=1)
+
+        path_img = np.zeros([201, 402])
+        for t in range(len(lat)):
+            slice = np.transpose(lat[t, :])[::-1] @ long[t, :]
+            path_img += slice
+
+        for idx in zip(np.where(path_img > 0)[0], np.where(path_img > 0)[1]):
+            path_img[idx] = 1
+
+        item = path_img
+
+        return torch.tensor(item, dtype=torch.float)
+
 
 
 

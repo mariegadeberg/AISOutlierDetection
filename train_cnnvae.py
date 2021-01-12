@@ -18,16 +18,25 @@ parser.add_argument("--val", type=str, default="val.pcl", help="What training da
 parser.add_argument("--ROI", type=str, default="bh", help="Specify the region of interest")
 parser.add_argument("--batchsize", type=int, default=32)
 parser.add_argument("--latent_features", type=int, default=100)
+parser.add_argument("--normalize_input", type=str, default="True")
 
 args = parser.parse_args()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f">> Using device: {device}")
 
-train_ds = AISDataset_Image(args.path + args.train, Config)
-train_loader = torch.utils.data.DataLoader(train_ds, batch_size=args.batchsize, shuffle=True)
+if args.normalize_input == "True":
+    train_ds = AISDataset_Image(args.path + args.train, Config)
+elif args.normalize_input == "False":
+    train_ds = AISDataset_ImageOneHot(args.path + args.train, Config)
 
-val_ds = AISDataset_Image(args.path + args.val, Config)
+rain_loader = torch.utils.data.DataLoader(train_ds, batch_size=args.batchsize, shuffle=True)
+
+if args.normalize_input == "True":
+    val_ds = AISDataset_Image(args.path + args.val, Config)
+elif args.normalize_input == "False":
+    val_ds = AISDataset_ImageOneHot(args.path + args.val, Config)
+
 val_loader = torch.utils.data.DataLoader(val_ds, batch_size=args.batchsize, shuffle=True)
 
 model = CVAE(Config.latent_shape)

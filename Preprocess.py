@@ -30,10 +30,12 @@ else:
 ## Running preprocessing
 if months_ == "all":
     months = ["2001", "2002", "2003"]
+    #months = ["1906", "1907", "1908", "1909", "1910", "1911", "1912", "2001", "2002", "2003"]
 else:
     months = ["1911"]
 
 ship_types = ["Carg", "Tank"]
+#ship_types = ["Pass"]
 
 ds_train_bh = []
 ds_val_bh = []

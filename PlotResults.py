@@ -5,33 +5,33 @@ import pickle
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
 results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BNclip0.6/output_30bh.txt")
 
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh15_noBN/output_15bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh30_noBN/output_30bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_10bh.txt")
 
 
 plt.figure()
-plt.plot(results.training_elbo)
-plt.plot(results.validation_elbo)
+plt.plot(results.training_elbo[1:])
+plt.plot(results.validation_elbo[1:])
 plt.legend([f"Training: Value at last epoch: {results.training_elbo.iloc[-1]:.4f}", "Validation"], fontsize=12)
-plt.title("Training Loss", fontsize=16)
+plt.title("ELBO During Training", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.savefig("../Figures/loss_30noskip.eps")
+plt.savefig("../Figures/elbo_cvae_zoom.eps")
 plt.show()
 
 
 plt.figure()
-plt.plot(results.training_kl)
-plt.plot(results.validation_kl)
+plt.plot(results.training_kl[1:])
+plt.plot(results.validation_kl[1:])
 plt.legend([f"Value at last epoch: {results.training_kl.iloc[-1]:.4f}", "Validation"], fontsize=12)
-plt.title("KL divergence", fontsize=16)
+plt.title("KL divergence During Training", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("KL divergence", fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-#plt.savefig("../Figures/kl_30noskip.eps")
+plt.savefig("../Figures/kl_cvae_zoom.eps")
 plt.show()
 
 plt.figure()
@@ -68,15 +68,15 @@ plt.title("Logits for Bornholm model for 100 epochs")
 #plt.ylim(-0.001, 0.01)
 plt.show()
 
-with open("/Volumes/MNG/HPCoutputs/models/bh30_norminput_klann/grad_30_bh.pcl", "rb") as f:
+with open("/Volumes/MNG/HPCoutputs/models/CVAE/bh15_noBN2/grad_15_bh.pcl", "rb") as f:
     w_ave = pickle.load(f)
 
 legend = []
 plt.figure()
-for name in w_ave[29].keys():
+for name in w_ave[2].keys():
     #if name == "decoder.0.weight":
     #    continue
-    plt.plot(w_ave[29][name])
+    plt.plot(w_ave[2][name])
     legend.append([name])
 plt.title("95th Quantile of Gradients \n Through Last Epoch of Training",  fontsize=16)
 plt.legend(legend,  fontsize=10)
