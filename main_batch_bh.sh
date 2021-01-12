@@ -1,7 +1,7 @@
 #!/bin/sh
 # embedded options to bsub - start with #BSUB
 # -- Name of the job ---
-#BSUB -J vrnn_bh50klannBN.6
+#BSUB -J vrnn_bh301h
 # -- specify queue --
 #BSUB -q gpuv100
 
@@ -44,8 +44,8 @@
 # run program
 python AISOutlierDetection/train.py \
       --num_epoch 30 \
-      --train "train_bh_.pcl" \
-      --val "val_bh_.pcl" \
+      --train "train_bh_1h.pcl" \
+      --val "val_bh_1h.pcl" \
       --ROI "bh" \
       --batchsize 32 \
       --warm_up 10 \
