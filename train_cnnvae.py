@@ -19,6 +19,7 @@ parser.add_argument("--ROI", type=str, default="bh", help="Specify the region of
 parser.add_argument("--batchsize", type=int, default=32)
 parser.add_argument("--latent_features", type=int, default=100)
 parser.add_argument("--normalize_input", type=str, default="True")
+parser.add_argument("--name", type=str)
 
 args = parser.parse_args()
 
@@ -51,7 +52,7 @@ epoch=0
 
 grads = []
 
-with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output_file:
+with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}{args.name}.txt", "w") as output_file:
     header = ["training_elbo", "validation_elbo", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
@@ -170,9 +171,9 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}.txt", "w") as output
 #plt.show()
 
 
-torch.save(model.state_dict(), args.save_dir+f"cvae_{args.ROI}{args.num_epoch}_epochs.pt")
+torch.save(model.state_dict(), args.save_dir+f"cvae_{args.ROI}{args.num_epoch}_epochs{args.name}.pt")
 
-with open(args.save_dir+f"grad_{args.num_epoch}_{args.ROI}.pcl", "wb") as fp:
+with open(args.save_dir+f"grad_{args.num_epoch}_{args.ROI}{args.name}.pcl", "wb") as fp:
     pickle.dump(grads, fp)
 
 #with open(args.save_dir+f"training_{args.num_epoch}_{args.ROI}.pcl", "wb") as fp:

@@ -5,20 +5,20 @@ import pickle
 results = pd.read_csv("../HPCoutputs/models/bh50_klannBN.6clip5/output_50bh.txt")
 results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/bh30_norminput_BNclip0.6/output_30bh.txt")
 
-results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh30_noBN/output_30bh.txt")
+results = pd.read_csv("/Volumes/MNG/HPCoutputs/models/CVAE/bh30nonorm/output_30bh.txt")
 results = pd.read_csv("/Volumes/MNG/models/output_10bh.txt")
 
 
 plt.figure()
-plt.plot(results.training_elbo[1:])
-plt.plot(results.validation_elbo[1:])
+plt.plot(results.training_elbo)
+plt.plot(results.validation_elbo)
 plt.legend([f"Training: Value at last epoch: {results.training_elbo.iloc[-1]:.4f}", "Validation"], fontsize=12)
 plt.title("ELBO During Training", fontsize=16)
 plt.xlabel("Epoch", fontsize=12)
 plt.ylabel("ELBO",  fontsize=12)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.savefig("../Figures/elbo_cvae_zoom.eps")
+#plt.savefig("../Figures/elbo_cvae_zoom.eps")
 plt.show()
 
 
