@@ -146,7 +146,7 @@ class VRNN(nn.Module):
             out, (h, c) = self.rnn(rnn_input, (h, c))
             out = out.squeeze()
 
-            h_out.append(out.mean(dim=1))
+            #h_out.append(out.mean(dim=1))
 
             #Calulating loss
             log_px = px.log_prob(x).sum(dim=1)
@@ -179,7 +179,7 @@ class VRNN(nn.Module):
             diagnostics = {'loss_list': torch.stack(loss_list).cpu().numpy(),
                            'log_px': torch.stack(log_px_list).cpu().numpy(),
                            'kl': torch.stack(kl_list).cpu().numpy(),
-                           'h': torch.stack(h_out).cpu().numpy(),
+                           #'h': torch.stack(h_out).cpu().numpy(),
                            "mu_prior": torch.stack(mu_prior).cpu().numpy(),
                            "mu_post": torch.stack(mu_post).cpu().numpy()}
 
