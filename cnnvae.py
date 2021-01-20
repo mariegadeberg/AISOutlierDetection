@@ -213,8 +213,8 @@ class CVAE(nn.Module):
         px = self.generative(z)
 
         logits = px.logits
-        #log_px = self.reduce(px.log_prob(x_t))
-        log_px = px.log_prob(x_t)
+        log_px = self.reduce(px.log_prob(x_t))
+        #log_px = px.log_prob(x_t)
 
         return logits, log_px
 

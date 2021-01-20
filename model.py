@@ -171,7 +171,7 @@ class VRNN(nn.Module):
             loss_list.append(-elbo_beta)
             #loss_list.append(acc_loss)
             kl_list.append(kl)
-            log_px_list.append(px.logits)
+            log_px_list.append(log_px)
             mu_prior.append(pz.mu.sum(dim=1))
             mu_post.append(qz.mu.sum(dim=1))
 
@@ -275,11 +275,6 @@ class VRNN(nn.Module):
 
 
 
-
-
-
-
-
 class ReparameterizedDiagonalGaussian(Distribution):
     """
     A distribution `N(y | mu, sigma I)` compatible with the reparameterization trick given `epsilon ~ N(0, 1)`.
@@ -308,56 +303,3 @@ class ReparameterizedDiagonalGaussian(Distribution):
         dist = torch.distributions.Normal(self.mu, self.sigma)
         return dist.log_prob(z)
 
-
-
-
-
-
-'''
-
-def test_normal_distribution():
-    """a few safety checks for your implementation"""
-    N = 1000000
-    ones = torch.ones(torch.Size((N,)))
-    mu = 1.224 * ones
-    sigma = 0.689 * ones
-    dist = ReparameterizedDiagonalGaussian(mu, sigma.log())
-    z = dist.sample()
-
-    # Expected value E[N(0, 1)] = 0
-    expected_z = z.mean()
-    diff = (expected_z - mu.mean()) ** 2
-    assert diff < 1e-3, f"diff = {diff}, expected_z = {expected_z}"
-
-    # Variance E[z**2 - E[z]**2]
-    var_z = (z ** 2 - expected_z ** 2).mean()
-    diff = (var_z - sigma.pow(2).mean()) ** 2
-    assert diff < 1e-3, f"diff = {diff}, var_z = {var_z}"
-
-    # log p(z)
-    from torch.distributions import Normal
-    base = Normal(loc=mu, scale=sigma)
-    diff = ((base.log_prob(z) - dist.log_prob(z)) ** 2).mean()
-    assert diff < 1e-3, f"diff = {diff}"
-
-
-test_normal_distribution()
-
-n_samples = 10000
-mu = torch.tensor([[0, 1]])
-sigma = torch.tensor([[0.5, 3]])
-ones = torch.ones((1000, 2))
-p = ReparameterizedDiagonalGaussian(mu=mu * ones, log_sigma=(sigma * ones).log())
-samples = p.sample()
-data = pd.DataFrame({"x": samples[:, 0], "y": samples[:, 1]})
-g = sns.jointplot(
-    data=data,
-    x="x", y="y",
-    kind="hex",
-    ratio=10
-)
-plt.subplots_adjust(top=0.9)
-g.fig.suptitle(r"$\mathcal{N}(\mathbf{y} \mid \mu, \sigma)$")
-plt.show()
-
-'''

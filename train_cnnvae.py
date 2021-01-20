@@ -105,6 +105,7 @@ with open(args.save_dir+f"output_{args.num_epoch}{args.ROI}{args.name}.txt", "w"
             for k, v in diagnostics.items():
                 training_epoch_data[k] += [v.mean().item()]
 
+
         ##for k, v in training_epoch_data.items():
         #    training_data[k] += [np.mean(training_epoch_data[k])]
 
@@ -175,6 +176,7 @@ torch.save(model.state_dict(), args.save_dir+f"cvae_{args.ROI}{args.num_epoch}_e
 
 with open(args.save_dir+f"grad_{args.num_epoch}_{args.ROI}{args.name}.pcl", "wb") as fp:
     pickle.dump(grads, fp)
+
 
 #with open(args.save_dir+f"training_{args.num_epoch}_{args.ROI}.pcl", "wb") as fp:
 #    pickle.dump(training_data, fp)

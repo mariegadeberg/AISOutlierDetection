@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-ds = AISDataset_ImageBlackout("/Volumes/MNG/data/test_bh_.pcl", Config, size = 50)
+ds = AISDataset_ImageOneHot("/Volumes/MNG/data/test_bh_.pcl", Config)
 loader = torch.utils.data.DataLoader(ds, batch_size=32, shuffle=False)
 
-ds_true = AISDataset_Image("/Volumes/MNG/data/test_bh_.pcl", Config)
+ds_true = AISDataset_ImageOneHot("/Volumes/MNG/data/test_bh_.pcl", Config)
 loader_true = torch.utils.data.DataLoader(ds_true, batch_size=32, shuffle=False)
 
 it_t = iter(loader_true)
@@ -23,12 +23,12 @@ latent_features = 100
 init_kernel = 16
 
 model = CVAE(latent_features)
-state_dict = torch.load("/Volumes/MNG/HPCoutputs/models/CVAE/bh30_noBN/cvae_bh30_epochs.pt", map_location=torch.device('cpu'))
+state_dict = torch.load("/Volumes/MNG/HPCoutputs/models/CVAE/bh30nonorm/cvae_bh30_epochsnonorm.pt", map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 
 inputs = inputs.unsqueeze(1)
 recon, log_px = model.sample(inputs)
-
+recon = recon.detach().numpy().squeeze()
 
 recon_norm = np.zeros([32, 201, 402])
 for i in range(32):
@@ -51,11 +51,11 @@ sns.heatmap(recon[30, :, :])
 plt.show()
 
 plt.figure()
-sns.heatmap(recon_prob_norm[15, :, :])
+sns.heatmap(recon_prob[30, :, :])
 plt.show()
 
 plt.figure()
-sns.heatmap(inputs.squeeze()[15, :, :])
+sns.heatmap(inputs.squeeze()[30, :, :])
 plt.show()
 
 plt.figure()
