@@ -23,8 +23,20 @@ The implementation of the Variational Recurrent Neural Network tries to replicat
 * utils: contains all helper functions used in main scripts
 
 ## Usage
-To train CVAE model for 30 epoch run:
+To train CVAE model for 10 epoch run:
 
 `python train_cvae.py --num_epoch 30`
 
-Here it is assumed that data lies in a folder one level up called "data", and the output will be saved in a folder one level up called "models". 
+Here it is assumed that data lies in a folder one level up called "data", and the output will be saved in a folder on same level called "trained_models". 
+
+To plot training stats of newly trained model run:
+
+```
+python PlotResults.py \
+    --output_file "/trained_models/CVAE/bh10_noBN/output_10bh.txt" \
+    --save_path "Figures/" \
+    --model_type "CVAE" \
+    --BN "False" \
+    --gradient_path "/trained_models/CVAE/bh10_noBN/grad_10_bh.pcl" 
+```
+where:
