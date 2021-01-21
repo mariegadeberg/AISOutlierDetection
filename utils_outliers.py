@@ -3,7 +3,7 @@ from Config import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random
-random.seed(124)
+random.seed(99)
 from scipy import sparse
 import torch
 
@@ -348,6 +348,8 @@ def get_anomaly_map(routes_tagged, dk, swe, legend_lines, save_fig, name, save_p
         plt.title("Paths Marked for Anomalies", fontsize=14)
     elif name == "pass":
         plt.title("Passenger Ship \n Paths Marked for Anomalies", fontsize=14)
+    elif name == "l":
+        plt.title("Paths Marked for Anomalies", fontsize=14)
     plt.xlabel("Longitude", fontsize=10)
     plt.ylabel("Latitude", fontsize=10)
     plt.xlim(13, 17)
@@ -471,8 +473,8 @@ def create_sparse_input(inputs):
 
     return input_sparse
 
-def get_outlier_l(log_px_true, l):
-    threshold = np.quantile([log_px_true[id] for id in l], 0.05)
+def get_outlier_l(log_px_true, l, threshold):
+
     id_ano = np.where([log_px_true[id] for id in l] < threshold)[0]
 
     return [l[i] for i in id_ano]
@@ -495,7 +497,7 @@ def id_length(dataset):
             l16.append(i)
         elif l < 20:
             l20.append(i)
-        elif l < 24:
+        elif l <= 24:
             l24.append(i)
 
     return l8, l12, l16, l20, l24
@@ -527,3 +529,32 @@ def get_log_px_train(dataset, model):
         out["length"].append(l)
 
     return out
+
+def get_thresholds(output, percentile):
+    l8 = []
+    l12 = []
+    l16 = []
+    l20 = []
+    l24 = []
+
+    for i, l in enumerate(output["length"]):
+        l = l * 10 / 60
+
+        if l < 8:
+            l8.append(i)
+        elif l < 12:
+            l12.append(i)
+        elif l < 16:
+            l16.append(i)
+        elif l < 20:
+            l20.append(i)
+        elif l < 24:
+            l24.append(i)
+
+    t8 = np.quantile([output["log_px"][k] for k in l8], percentile)
+    t12 = np.quantile([output["log_px"][k] for k in l12], percentile)
+    t16 = np.quantile([output["log_px"][k] for k in l16], percentile)
+    t20 = np.quantile([output["log_px"][k] for k in l20], percentile)
+    t24 = np.quantile([output["log_px"][k] for k in l24], percentile)
+
+    return t8, t12, t16, t20, t24

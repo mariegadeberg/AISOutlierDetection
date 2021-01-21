@@ -27,6 +27,7 @@ parser.add_argument("--kl_start", type=float, default=0.1, help="initial kl weig
 parser.add_argument("--warm_up", type=int, default=1, help="how many epochs before kl weight reaches 1")
 parser.add_argument("--gamma", type=float, default=0.6, help="weight of batchnormalization")
 parser.add_argument("--bn_switch", type=str, default="False", help="Whether to use batch normalization on mean approximate posterior")
+parser.add_argument("--lr", type=float, default=0.0003, help="Learning rate")
 
 args = parser.parse_args()
 
@@ -41,6 +42,7 @@ ROI = args.ROI
 batchsize = args.batchsize
 gamma = args.gamma
 bn_switch = args.bn_switch
+lr = args.lr
 
 if bn_switch == "True":
     bn_switch = True
@@ -49,7 +51,6 @@ else:
 
 input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
-lr = Config.lr
 splits = Config.splits[ROI]
 
 mean_path = path+"mean_"+ROI+"_1h.pcl"
@@ -255,15 +256,15 @@ with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
 
 writer.close()
 
-torch.save(model.state_dict(), save_dir+f"vrnn_{ROI}{num_epoch}_epochs.pt")
+torch.save(model.state_dict(), save_dir+f"vrnn_{ROI}{num_epoch}_epochs_{lr}.pt")
 
-with open(save_dir+f"diagnostics_{num_epoch}_{ROI}.pcl", "wb") as fp:
+with open(save_dir+f"diagnostics_{num_epoch}_{ROI}_{lr}.pcl", "wb") as fp:
     pickle.dump(diagnostics_list, fp)
 
-with open(save_dir+f"grad_{num_epoch}_{ROI}.pcl", "wb") as fp:
+with open(save_dir+f"grad_{num_epoch}_{ROI}_{lr}.pcl", "wb") as fp:
     pickle.dump(grads, fp)
 
-with open(save_dir+f"grad_lstm_{num_epoch}_{ROI}.pcl", "wb") as fp:
+with open(save_dir+f"grad_lstm_{num_epoch}_{ROI}_{lr}.pcl", "wb") as fp:
     pickle.dump(grads_lstm, fp)
 
 

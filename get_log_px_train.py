@@ -27,3 +27,6 @@ out = get_log_px_train(dataset, model)
 with open(args.out_path, "wb") as file:
     pickle.dump(out, file)
 
+
+with open("/Volumes/MNG/outlier_outputs/output_log_px.pcl", "rb") as file:
+    out = pickle.load(file)

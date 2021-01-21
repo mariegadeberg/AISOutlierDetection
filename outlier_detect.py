@@ -138,6 +138,10 @@ else:
     with open(args.data_path + "output_pass.pcl", "rb") as file:
         logits_pass, log_px_pass, probs_pass, inputs_pass = pickle.load(file)
 
+    with open(args.data_path + "output_log_px.pcl", "rb") as file:
+        output_train = pickle.load(file)
+    output_train["log_px"] = [item.detach().numpy() for item in output_train["log_px"]]
+
 
 
 plt.figure()
@@ -178,7 +182,7 @@ plt.xlim(-500, 100)
 plt.show()
 
 # Flag outliers
-threshold = np.quantile(log_px_true, 0.05)
+threshold = np.quantile(output_train["log_px"], 0.05)
 
 outliers_true = catch_outliers(log_px_true, threshold)
 outliers_flip = catch_outliers(log_px_flip, threshold)
@@ -201,8 +205,8 @@ routes_tagged_pass = tag_route_for_plt(dataset_pass, random.choices(outliers_pas
 legend_lines = [Line2D([0], [0], color="b", lw=2),
                 Line2D([0], [0], color="r", lw=2)]
 
-get_anomaly_map(routes_tagged_true, dk2, swe, legend_lines, args.save_fig, "true", args.save_path)
-get_anomaly_map(routes_tagged_pass, dk2, swe, legend_lines, args.save_fig, "pass", args.save_path)
+get_anomaly_map(routes_tagged_true, dk2, swe, legend_lines, save_fig, "true", args.save_path)
+get_anomaly_map(routes_tagged_pass, dk2, swe, legend_lines, save_fig, "pass", args.save_path)
 
 
 lat_cols = np.round(Config.lat_columns[args.ROI], 1)
@@ -310,49 +314,22 @@ if save_fig:
 plt.show()
 
 
-print(f"True paths:")
-print(f"--- max: {min(log_px_true):.3f}")
-print(f"--- mean: {np.mean(log_px_true):.3f}")
-print(f"--- std: {np.std(log_px_true):.3f}")
-print("")
-print(f"Cut paths:")
-print(f"--- max: {min(log_px_cut):.3f}")
-print(f"--- mean: {np.mean(log_px_cut):.3f}")
-print(f"--- std: {np.std(log_px_cut):.3f}")
-print(f"----t-stat: {calc_z(log_px_true, log_px_cut)}")
-print("")
-print(f"Flipped paths:")
-print(f"--- max: {min(log_px_flip):.3f}")
-print(f"--- mean: {np.mean(log_px_flip):.3f}")
-print(f"--- std: {np.std(log_px_flip):.3f}")
-print(f"----t-stat: {calc_z(log_px_true, log_px_flip)}")
-print("")
-print(f"Blackout paths:")
-print(f"--- max: {min(log_px_bo):.3f}")
-print(f"--- mean: {np.mean(log_px_bo):.3f}")
-print(f"--- std: {np.std(log_px_bo):.3f}")
-print(f"----t-stat: {calc_z(log_px_true, log_px_bo)}")
-print("")
-print(f"Shifted paths:")
-print(f"--- max: {min(log_px_shift):.3f}")
-print(f"--- mean: {np.mean(log_px_shift):.3f}")
-print(f"--- std: {np.std(log_px_shift):.3f}")
-print(f"----t-stat: {calc_z(log_px_true, log_px_shift)}")
-
 
 l8, l12, l16, l20, l24 = id_length(dataset)
 
-out_l8 = get_outlier_l(log_px_true, l8)
-out_l12 = get_outlier_l(log_px_true, l12)
-out_l16 = get_outlier_l(log_px_true, l16)
-out_l20 = get_outlier_l(log_px_true, l20)
-out_l24 = get_outlier_l(log_px_true, l24)
+t8, t12, t16, t20, t24 = get_thresholds(output_train, 0.05)
+
+out_l8 = get_outlier_l(log_px_true, l8, t8)
+out_l12 = get_outlier_l(log_px_true, l12, t12)
+out_l16 = get_outlier_l(log_px_true, l16, t16)
+out_l20 = get_outlier_l(log_px_true, l20, t20)
+out_l24 = get_outlier_l(log_px_true, l24, t24)
 
 outliers_l = out_l8 + out_l12 + out_l16 + out_l20 + out_l24
 
 routes_tagged_l = tag_route_for_plt(dataset, random.choices(outliers_l, k=30))
 
-get_anomaly_map(routes_tagged_l, dk2, swe, legend_lines, True, "true", args.save_path)
+get_anomaly_map(routes_tagged_l, dk2, swe, legend_lines, save_fig, "l", args.save_path)
 
 lengths_l, lengths_ano_l = get_lengths(dataset, outliers_l)
 
@@ -364,9 +341,67 @@ plt.title("Distribution of Lengths of Paths \n Marked as Normal vs. Anomalous", 
 plt.xlabel("Hours", fontsize=10)
 plt.xticks(fontsize=8)
 plt.yticks(fontsize=8)
-#if save_fig:
-plt.savefig(args.save_path+"lengths_l.png")
+if save_fig:
+    plt.savefig(args.save_path+"lengths_l.png")
 plt.show()
+
+x = [1, 2, 3, 4, 5]
+y = np.round([t8, t12, t16, t20, t24], 0)
+
+f, ax = plt.subplots()
+plt.plot(x, y, ".", markersize=10)
+ax.set_xticks(x)
+ax.set_xticklabels(["[4-8[", "[8-12[", "[12-16[", "[16-20[", "[20-24]"], fontsize=8)
+for i, txt in enumerate(y):
+    ax.annotate(txt, (x[i], y[i]))
+plt.xlabel("Hour intervals", fontsize=10)
+plt.ylabel(r"$\log p(x)$", fontsize=10)
+plt.yticks(fontsize=8)
+plt.title("Threshold for Different Intervals", fontsize=14)
+if save_fig:
+    plt.savefig(args.save_path+"thresholds_lengths.png")
+plt.show()
+
+
+print(f"True paths:")
+print(f"--- max: {min(log_px_true):.3f}")
+print(f"--- mean: {np.mean(log_px_true):.3f}")
+print(f"--- std: {np.std(log_px_true):.3f}")
+print(f"----percent flagged: {len(outliers_true)/len(inputs_true)}")
+print("")
+print(f"Cut paths:")
+print(f"--- max: {min(log_px_cut):.3f}")
+print(f"--- mean: {np.mean(log_px_cut):.3f}")
+print(f"--- std: {np.std(log_px_cut):.3f}")
+print(f"----t-stat: {calc_z(log_px_true, log_px_cut):.3f}")
+print("")
+print(f"Flipped paths:")
+print(f"--- max: {min(log_px_flip):.3f}")
+print(f"--- mean: {np.mean(log_px_flip):.3f}")
+print(f"--- std: {np.std(log_px_flip):.3f}")
+print(f"----t-stat: {calc_z(log_px_true, log_px_flip):.3f}")
+print(f"----percent flagged: {len(outliers_flip)/len(inputs_flip):.3f}")
+print("")
+print(f"Blackout paths:")
+print(f"--- max: {min(log_px_bo):.3f}")
+print(f"--- mean: {np.mean(log_px_bo):.3f}")
+print(f"--- std: {np.std(log_px_bo):.3f}")
+print(f"----t-stat: {calc_z(log_px_true, log_px_bo):.3f}")
+print("")
+print(f"Shifted paths:")
+print(f"--- max: {min(log_px_shift):.3f}")
+print(f"--- mean: {np.mean(log_px_shift):.3f}")
+print(f"--- std: {np.std(log_px_shift):.3f}")
+print(f"----t-stat: {calc_z(log_px_true, log_px_shift):.3f}")
+print(f"----percent flagged: {len(outliers_shift)/len(inputs_shift):.3f}")
+print(f"Length_single:")
+print(f"----t-stat: {calc_z(lengths_true, lengths_ano):.3f}")
+print(f"Length_multiple:")
+print(f"----t-stat: {calc_z(lengths_l, lengths_ano_l):.3f}")
+print(f"Threshold single: {threshold:.3f}")
+
+
+
 
 
 ###
