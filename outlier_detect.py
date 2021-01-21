@@ -1,14 +1,10 @@
 from cnnvae import CVAE
-import torch
-from utils_preprocess import *
-from Config import *
-import matplotlib.pyplot as plt
-import seaborn as sns
+from utils.utils_preprocess import *
 from matplotlib.lines import Line2D
 import random
 random.seed(123)
 import geopandas as gpd
-from utils_outliers import *
+from utils.utils_outliers import *
 import argparse
 
 parser = argparse.ArgumentParser()

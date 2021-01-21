@@ -2,8 +2,7 @@ import glob
 import pickle
 from Config import *
 import argparse
-from utils_preprocess import Preprocess
-import json
+from utils.utils_preprocess import Preprocess
 import sys
 
 parser = argparse.ArgumentParser()

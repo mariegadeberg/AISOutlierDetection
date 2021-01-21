@@ -1,6 +1,5 @@
 from cnnvae import CVAE
-import torch
-from utils_preprocess import *
+from utils.utils_preprocess import *
 from Config import *
 import matplotlib.pyplot as plt
 import seaborn as sns

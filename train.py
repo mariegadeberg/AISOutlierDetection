@@ -1,15 +1,14 @@
 from model import VRNN
-import torch
 from torch.utils.data import DataLoader
-from utils_preprocess import AISDataset
+from utils.utils_preprocess import AISDataset
 from Config import *
-from utils_preprocess import TruncCollate, prep_mean
-from utils_train import *
+from utils.utils_preprocess import TruncCollate, prep_mean
+from utils.utils_train import *
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 import pickle
 import csv
-import matplotlib.pyplot as plt
+
 # Setting arguments
 
 parser = argparse.ArgumentParser()
@@ -126,9 +125,8 @@ with open(save_dir+f"output_{num_epoch}{ROI}_lr{lr}.txt", "w") as output_file:
                  "w_hi": [],
                  "w_hf": [],
                  "w_hc": [],
-                 "w_ho": [],}
+                 "w_ho": []}
 
-        #loss_plot = []
 
         model.train()
         i = 0
@@ -144,9 +142,8 @@ with open(save_dir+f"output_{num_epoch}{ROI}_lr{lr}.txt", "w") as output_file:
 
             optimizer.zero_grad()
             loss.backward()
-            #for n, p in model.named_parameters():
-            #    if "decoder" not in n:
-            nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
+            if bn_switch:
+                nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
             optimizer.step()
             #plot_grad_flow(model.named_parameters())
             w_ave = get_weights(w_ave, model)
@@ -159,7 +156,6 @@ with open(save_dir+f"output_{num_epoch}{ROI}_lr{lr}.txt", "w") as output_file:
             epoch_train_logpx += np.mean(diagnostics["log_px"])
 
             epoch_train_loss += loss.item()
-            #loss_plot.append(loss.item())
 
             i += 1
 
@@ -232,27 +228,6 @@ with open(save_dir+f"output_{num_epoch}{ROI}_lr{lr}.txt", "w") as output_file:
 
         epoch += 1
 
-#plt.tight_layout()
-#plt.savefig(save_dir+"/gradient_bars.png")
-##
-#legend = []
-#plt.figure()
-#for name in w_lstm.keys():
-#    plt.plot(w_lstm[name])
-#    legend.append([name])
-#plt.title("Trace of gradients through 1st epoch of training")
-#plt.legend(legend)
-#plt.xlabel("Steps")
-#plt.ylabel("Parameter value")
-##plt.ylim(-0.05, 0.05)
-##plt.savefig(save_dir+"/gradient_flow_no_mean_zoom.eps")
-#plt.show()
-
-#plt.figure()
-#plt.plot(loss_plot)
-#plt.title("Training loss through small training set")
-#plt.show()
-##
 
 writer.close()
 

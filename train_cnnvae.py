@@ -1,7 +1,6 @@
 from cnnvae import CVAE
-import torch
-from utils_train import *
-from utils_preprocess import *
+from utils.utils_train import *
+from utils.utils_preprocess import *
 from Config import *
 import argparse
 import csv

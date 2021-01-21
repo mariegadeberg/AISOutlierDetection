@@ -1,4 +1,4 @@
-from utils_outliers import *
+from utils.utils_outliers import *
 import torch
 import pickle
 from cnnvae import CVAE
