@@ -1,5 +1,4 @@
-import numpy as np
-from Config import *
+from scripts_main.Config import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random

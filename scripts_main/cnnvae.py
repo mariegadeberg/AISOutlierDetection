@@ -2,10 +2,8 @@ import torch
 from torch import nn, Tensor
 from torch.distributions import Distribution
 from torch.distributions import Bernoulli
-from torch.autograd import Variable
 import math
-import numpy as np
-from model import ReparameterizedDiagonalGaussian
+from scripts_main.model import ReparameterizedDiagonalGaussian
 
 
 class CVAE(nn.Module):

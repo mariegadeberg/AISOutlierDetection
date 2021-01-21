@@ -1,7 +1,7 @@
-from model import VRNN
+from scripts_main.model import VRNN
 from torch.utils.data import DataLoader
 from utils.utils_preprocess import AISDataset
-from Config import *
+from scripts_main.Config import *
 from utils.utils_preprocess import TruncCollate, prep_mean
 from utils.utils_train import *
 import argparse

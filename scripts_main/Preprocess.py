@@ -1,6 +1,6 @@
 import glob
 import pickle
-from Config import *
+from scripts_main.Config import *
 import argparse
 from utils.utils_preprocess import Preprocess
 import sys

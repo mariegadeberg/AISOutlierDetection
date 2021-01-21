@@ -1,7 +1,7 @@
-from cnnvae import CVAE
+from scripts_main.cnnvae import CVAE
 from utils.utils_train import *
 from utils.utils_preprocess import *
-from Config import *
+from scripts_main.Config import *
 import argparse
 import csv
 from collections import defaultdict
