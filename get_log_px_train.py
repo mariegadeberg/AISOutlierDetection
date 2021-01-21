@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", default="./CVAE/cvae_bh30_epochs.pt", help="path to model")
 parser.add_argument("--train_ds", default="./data/train_bh_.pcl", help="path to training data")
 parser.add_argument("--out_path", default="./CVAE/output_log_px.pcl")
+parser.add_argument("--save_dir", defualt="/Volumes/MNG/outlier_outputs/", help="path to save output")
 
 args = parser.parse_args()
 
@@ -28,5 +29,5 @@ with open(args.out_path, "wb") as file:
     pickle.dump(out, file)
 
 
-with open("/Volumes/MNG/outlier_outputs/output_log_px.pcl", "rb") as file:
+with open(args.save_dir+"output_log_px.pcl", "rb") as file:
     out = pickle.load(file)
