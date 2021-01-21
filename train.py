@@ -94,7 +94,7 @@ anneal_rate = (1.0 - args.kl_start) / (args.warm_up * (len(train_ds) / batchsize
 grads = []
 grads_lstm = []
 
-with open(save_dir+f"output_{num_epoch}{ROI}.txt", "w") as output_file:
+with open(save_dir+f"output_{num_epoch}{ROI}_lr{lr}.txt", "w") as output_file:
     header = ["training_loss", "validation_loss", "training_kl", "validation_kl", "training_logpx", "validation_logpx", "mi", "au"]
     csv_writer = csv.DictWriter(output_file, fieldnames=header)
     csv_writer.writeheader()
