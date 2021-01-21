@@ -4,8 +4,6 @@ This repository contains all code used to generate the findings of the master th
 
 The project uses two models; a Convolutional Variational Autoencoder and a Variational Recurrent Neural Network. 
 
-The implementation of the Variational Recurrent Neural Network tries to replicate the model proposed in "GeoTrackNet-A Maritime Anomaly Detector using Probabilistic Neural Network Representation of AIS Tracks and A Contrario Detection", Nguyen et al. 2019, https://arxiv.org/abs/1912.00682.
-
 ## File Summary
 * Job Scripts: Contains job scripts used to train models on DTU HPC LSF 10 cluster
 * Config.py: configuration file containing hyperparameters
@@ -46,5 +44,11 @@ where:
 - `BN` indicates whether batchnormalization of the approximate posterior has been used
 - `gradient_path` is the directory to the "grad" file generated form the training file
 
-For all files run ´python filename.py --help´ for full list of arguments available. 
+For all files run `python filename.py --help` for full list of arguments available. 
 
+## References
+The implementation of the Variational Recurrent Neural Network tries to replicate the model proposed in "GeoTrackNet-A Maritime Anomaly Detector using Probabilistic Neural Network Representation of AIS Tracks and A Contrario Detection", Nguyen et al. 2019, https://arxiv.org/abs/1912.00682.
+
+The general implementation of the Variational Autoencoder was done with inspiration from: https://github.com/DeepLearningDTU/02456-deep-learning-with-PyTorch/blob/master/7_Unsupervised/7.2-EXE-variational-autoencoder.ipynb
+
+The implementation of Mutual Information and Active Units was done with inspiration from: https://github.com/jxhe/vae-lagging-encoder
