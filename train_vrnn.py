@@ -27,6 +27,7 @@ parser.add_argument("--warm_up", type=int, default=1, help="how many epochs befo
 parser.add_argument("--gamma", type=float, default=0.6, help="weight of batchnormalization")
 parser.add_argument("--bn_switch", type=str, default="False", help="Whether to use batch normalization on mean approximate posterior")
 parser.add_argument("--lr", type=float, default=0.0003, help="Learning rate")
+parser.add_argument("--clip_grad", type=str, default="False", help="Whether to use gradient clipping")
 
 args = parser.parse_args()
 
@@ -142,7 +143,7 @@ with open(save_dir+f"output_{num_epoch}{ROI}_lr{lr}.txt", "w") as output_file:
 
             optimizer.zero_grad()
             loss.backward()
-            if bn_switch:
+            if args.clip_grad == "True":
                 nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
             optimizer.step()
             #plot_grad_flow(model.named_parameters())

@@ -42,7 +42,7 @@
 #module load cudnn/v7.6.5.32-prod-cuda-10.2
 
 # run program
-python AISOutlierDetection/train_cnnvae.py \
+python AISOutlierDetection/train_cvae.py \
       --num_epoch 100 \
       --path "./data/small/" \
       --train "train_bh_small.pcl" \

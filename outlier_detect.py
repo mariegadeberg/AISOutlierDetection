@@ -134,9 +134,9 @@ else:
     with open(args.data_path + "output_pass.pcl", "rb") as file:
         logits_pass, log_px_pass, probs_pass, inputs_pass = pickle.load(file)
 
-    with open(args.data_path + "output_log_px.pcl", "rb") as file:
-        output_train = pickle.load(file)
-    output_train["log_px"] = [item.detach().numpy() for item in output_train["log_px"]]
+with open(args.data_path + "output_log_px.pcl", "rb") as file:
+    output_train = pickle.load(file)
+output_train["log_px"] = [item.detach().numpy() for item in output_train["log_px"]]
 
 
 
