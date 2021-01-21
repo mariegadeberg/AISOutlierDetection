@@ -25,6 +25,6 @@ The implementation of the Variational Recurrent Neural Network tries to replicat
 ## Usage
 To train CVAE model for 30 epoch run:
 
-´python train_cvae.py --num_epoch 30´
+`python train_cvae.py --num_epoch 30`
 
 Here it is assumed that data lies in a folder one level up called "data", and the output will be saved in a folder one level up called "models". 
