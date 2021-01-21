@@ -2,7 +2,7 @@
 
 This repository contains all code used to generate the findings of the master thesis "Anomaly Detection for AIS Data Using Deep Neural Networks for Trajectory Prediction" produced to obtain a masters degree in Mathematical Modelling and Computation from the Technical University of Denmark by Marie Normann Gadeberg. 
 
-The project uses two models; a Convolutional Variational Autoencoder and a Variational Recurrent Neural Network. 
+The project uses two models; a Convolutional Variational Autoencoder and a Variational Recurrent Neural Network available in `cvae.py` and `vrnn.py` respectively. 
 
 ## File Summary
 * Job Scripts: Contains job scripts used to train models on DTU HPC LSF 10 cluster
