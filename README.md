@@ -22,3 +22,8 @@ The implementation of the Variational Recurrent Neural Network tries to replicat
   - sample.py : generate reconstructed paths using the VRNN model
 * utils: contains all helper functions used in main scripts
 
+## Usage
+To train CVAE model for 30 epoch run:
+'python train_cvae.py --num_epoch 30'
+
+Here it is assumed that data lies in a folder one level up called "data", and the output will be saved in a folder one level up called "models". 
