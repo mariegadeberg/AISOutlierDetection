@@ -1,7 +1,7 @@
 #!/bin/sh
 # embedded options to bsub - start with #BSUB
 # -- Name of the job ---
-#BSUB -J vrnn_bh301h
+#BSUB -J vrnn_bh30lr0003
 # -- specify queue --
 #BSUB -q gpuv100
 
