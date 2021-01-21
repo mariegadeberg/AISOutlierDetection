@@ -1,4 +1,4 @@
-from scripts_main.cnnvae import CVAE
+from scripts_main.cvae import CVAE
 from utils.utils_train import *
 from utils.utils_preprocess import *
 from scripts_main.Config import *

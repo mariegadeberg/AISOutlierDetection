@@ -1,4 +1,4 @@
-from scripts_main.model import VRNN
+from scripts_main.vrnn import VRNN
 from torch.utils.data import DataLoader
 from utils.utils_preprocess import AISDataset
 from scripts_main.Config import *

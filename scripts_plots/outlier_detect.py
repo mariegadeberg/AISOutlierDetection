@@ -1,4 +1,4 @@
-from scripts_main.cnnvae import CVAE
+from scripts_main.cvae import CVAE
 from utils.utils_preprocess import *
 from matplotlib.lines import Line2D
 import random
