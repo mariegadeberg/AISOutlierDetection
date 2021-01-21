@@ -1,4 +1,4 @@
-from scripts_main.Config import *
+from Config import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 import random

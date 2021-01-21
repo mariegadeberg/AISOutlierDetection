@@ -1,9 +1,9 @@
-from scripts_main.vrnn import VRNN
+from vrnn import VRNN
 from torch.utils.data import DataLoader
-from utils.utils_preprocess import AISDataset
-from scripts_main.Config import *
-from utils.utils_preprocess import TruncCollate, prep_mean
-from utils.utils_train import *
+from utils_preprocess import AISDataset
+from Config import *
+from utils_preprocess import TruncCollate, prep_mean
+from utils_train import *
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 import pickle

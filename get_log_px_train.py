@@ -1,7 +1,7 @@
-from utils.utils_outliers import *
+from utils_outliers import *
 import torch
 import pickle
-from scripts_main.cvae import CVAE
+from cvae import CVAE
 import argparse
 
 parser = argparse.ArgumentParser()

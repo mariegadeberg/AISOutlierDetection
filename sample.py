@@ -1,9 +1,9 @@
 import torch
 import pickle
 import matplotlib.pyplot as plt
-from scripts_main.Config import *
-from scripts_main.vrnn import VRNN
-from utils.utils_preprocess import AISDataset, TruncCollate, prep_mean
+from Config import *
+from vrnn import VRNN
+from utils_preprocess import AISDataset, TruncCollate, prep_mean
 from matplotlib.lines import Line2D
 import geopandas as gpd
 import argparse

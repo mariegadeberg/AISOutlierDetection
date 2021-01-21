@@ -1,8 +1,8 @@
 import glob
 import pickle
-from scripts_main.Config import *
+from Config import *
 import argparse
-from utils.utils_preprocess import Preprocess
+from utils_preprocess import Preprocess
 import sys
 
 parser = argparse.ArgumentParser()

@@ -5,7 +5,7 @@ from torch.nn.functional import softplus
 from torch.distributions import Distribution
 from torch.distributions import Bernoulli
 from torch.nn.functional import binary_cross_entropy_with_logits
-from torch.distributions import ContinuousBernoulli
+#from torch.distributions import ContinuousBernoulli
 import numpy as np
 import seaborn as sns
 import pandas as pd

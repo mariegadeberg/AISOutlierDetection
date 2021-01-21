@@ -1,10 +1,10 @@
-from scripts_main.cvae import CVAE
-from utils.utils_preprocess import *
+from cvae import CVAE
+from utils_preprocess import *
 from matplotlib.lines import Line2D
 import random
 random.seed(123)
 import geopandas as gpd
-from utils.utils_outliers import *
+from utils_outliers import *
 import argparse
 
 parser = argparse.ArgumentParser()

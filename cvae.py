@@ -3,7 +3,7 @@ from torch import nn, Tensor
 from torch.distributions import Distribution
 from torch.distributions import Bernoulli
 import math
-from scripts_main.vrnn import ReparameterizedDiagonalGaussian
+from vrnn import ReparameterizedDiagonalGaussian
 
 
 class CVAE(nn.Module):
