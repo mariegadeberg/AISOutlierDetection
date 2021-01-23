@@ -12,6 +12,7 @@ The project uses two models; a Convolutional Variational Autoencoder and a Varia
 * cvae.py: contains the CVAE model
 * get_log_px_train: used to get log_px og training set after finished training
 * outlier_detect.py: generate all plots used in CVAE result section
+* requirements.txt: requirement file containing package versions used in project
 * sample.py: generate reconstructed paths using the VRNN model
 * train_cvae.py: file to run when training CVAE model
 * train_vrnn.py: file to fun when training VRNN model
