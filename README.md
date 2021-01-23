@@ -44,6 +44,25 @@ where:
 - `BN` indicates whether batchnormalization of the approximate posterior has been used
 - `gradient_path` is the directory to the "grad" file generated form the training file
 
+To train VRNN for 10 epochs using batchsize 32, KL annealing, a batchnormalized approximate posterior and gradient clipping run:
+
+```
+python train_vrnn.py \
+    --num_epoch 10 \
+    --batchsize 32 \
+    --kl_start 0.1 \
+    --warm_up 10 \
+    --gamma 0.6 \
+    --bn_switch "True" \
+    --clip_grad "True 
+```
+where:
+- `kl_start` is the increase per epoch of the weight on the KL divergence
+- `warm_up` is how many epochs before weight on KL divergence reaches 1
+- `gamma` indicates the fixed mean imposed on the batch normalized approximate posterior
+- `bn_switch` indicates that batch normalization of the approximate posterior should be used
+- `clip_grad` indicates that gradient clipping should be used
+
 For all files run `python filename.py --help` for full list of arguments available. 
 
 ## References
