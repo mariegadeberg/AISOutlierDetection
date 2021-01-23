@@ -9,6 +9,7 @@ The project uses two models; a Convolutional Variational Autoencoder and a Varia
 * Config.py: configuration file containing hyperparameters
 * PlotResults.py: generates plots showing training stats
 * Preprocess.py: file to run to preprocess data
+* Thesis.pdf: the full thesis
 * cvae.py: contains the CVAE model
 * get_log_px_train: used to get log_px og training set after finished training
 * outlier_detect.py: generate all plots used in CVAE result section
