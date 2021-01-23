@@ -15,10 +15,10 @@ parser.add_argument("--save_dir", type=str, default="./models/", help="Directory
 parser.add_argument("--train", type=str, default="train.pcl", help="What training data should be used")
 parser.add_argument("--val", type=str, default="val.pcl", help="What training data should be used")
 parser.add_argument("--ROI", type=str, default="bh", help="Specify the region of interest")
-parser.add_argument("--batchsize", type=int, default=32)
-parser.add_argument("--latent_features", type=int, default=100)
-parser.add_argument("--normalize_input", type=str, default="True")
-parser.add_argument("--name", type=str)
+parser.add_argument("--batchsize", type=int, default=32, help="Batchsize to use")
+parser.add_argument("--latent_features", type=int, default=100, help="Number of latent features in VAE")
+parser.add_argument("--normalize_input", type=str, default="True", choices={"True", "False"}, help="Whether to use a normalized input or merely binary values if the ship was present or not")
+parser.add_argument("--name", type=str, default="", help="name to individualize output files")
 
 args = parser.parse_args()
 

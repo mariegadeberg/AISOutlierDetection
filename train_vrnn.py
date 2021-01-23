@@ -17,10 +17,10 @@ parser.add_argument("--path", type=str, default="./data/", help="Which directory
 parser.add_argument("--num_epoch", type=int, default=1, help="How many epochs should run during training")
 parser.add_argument("--beta", type=float, default=1, help="The size of the regularization coefficient 'beta'")
 parser.add_argument("--save_dir", type=str, default="./models/", help="Directory to save model")
-parser.add_argument("--print_every", type=int, default=1, help="Determines how often it print to terminal. Default every 10th epoch")
+parser.add_argument("--print_every", type=int, default=1, help="Determines how often it print to terminal. Default every epoch")
 parser.add_argument("--train", type=str, default="train.pcl", help="What training data should be used")
 parser.add_argument("--val", type=str, default="val.pcl", help="What training data should be used")
-parser.add_argument("--ROI", type=str, default="blt", help="Specify the region of interest")
+parser.add_argument("--ROI", type=str, default="bh", help="Specify the region of interest")
 parser.add_argument("--batchsize", type=int, default=1)
 parser.add_argument("--kl_start", type=float, default=0.1, help="initial kl weight")
 parser.add_argument("--warm_up", type=int, default=1, help="how many epochs before kl weight reaches 1")
@@ -53,7 +53,7 @@ input_shape = Config.input_shape[ROI]
 latent_shape = Config.latent_shape
 splits = Config.splits[ROI]
 
-mean_path = path+"mean_"+ROI+"_1h.pcl"
+mean_path = path+"mean_"+ROI+".pcl"
 
 # Setup for training
 writer = SummaryWriter()
